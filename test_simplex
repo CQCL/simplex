@@ -1,0 +1,636 @@
+#!/usr/bin/env python
+
+from simplex import Simplex
+from pytket import Circuit
+from pytket.utils import probs_from_state
+import argparse
+from collections import Counter
+from itertools import product
+
+
+def test_X():
+    global validate
+    S = Simplex(2)
+    S.X(0)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == 1
+    assert b1 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_Z():
+    global validate
+    S = Simplex(2)
+    S.Z(0)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == 0
+    assert b1 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_Y():
+    global validate
+    S = Simplex(2)
+    S.Y(0)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == 1
+    assert b1 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_H():
+    global validate
+    S = Simplex(2)
+    S.H(1)
+    b0 = S.MeasZ(0)
+    assert b0 == 0
+    assert S.is_deterministic()
+    b1 = S.MeasZ(1)
+    assert b1 in [0, 1]
+    assert not S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_S():
+    global validate
+    S = Simplex(1)
+    S.S(0)
+    b0 = S.MeasZ(0)
+    assert b0 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_Sdg():
+    global validate
+    S = Simplex(1)
+    S.Sdg(0)
+    b0 = S.MeasZ(0)
+    assert b0 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_CZ():
+    global validate
+    S = Simplex(2)
+    S.X(0)
+    S.CZ(0, 1)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == 1
+    assert b1 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_CX():
+    global validate
+    S = Simplex(2)
+    S.X(0)
+    S.CX(0, 1)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == 1
+    assert b1 == 1
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_MeasZ():
+    global validate
+    S = Simplex(2)
+    S.H(0)
+    S.CX(0, 1)
+    b0 = S.MeasZ(0)
+    b1 = S.MeasZ(1)
+    assert b0 == b1
+    assert not S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_MeasX():
+    global validate
+    S = Simplex(1)
+    S.H(0)
+    b0 = S.MeasX(0)
+    assert b0 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_MeasY():
+    global validate
+    S = Simplex(1)
+    S.H(0)
+    S.S(0)
+    b0 = S.MeasY(0)
+    assert b0 == 0
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_many_qubits():
+    global validate
+    S = Simplex(30)
+    S.H(0)
+    for i in range(1, 30):
+        S.CX(0, i)
+    b = [S.MeasZ(i) for i in range(30)]
+    assert all(b[i] == b[0] for i in range(1, 30))
+    assert not S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_complicated_circuit_1():
+    global validate
+    S = Simplex(3)
+    S.H(0).H(1).H(2).CX(0, 1).CZ(1, 2).S(1).Y(2).CX(2, 0).Z(1)
+    S.MeasX(1)
+    S.MeasZ(0)
+    S.MeasY(2)
+    S.S(0).S(1).S(2).CX(1, 2).CX(0, 1).H(0)
+    S.X(1).Z(1).S(0).CX(0, 2).CZ(1, 0)
+    S.MeasZ(0)
+    S.MeasZ(1)
+    S.MeasY(1)
+    S.MeasZ(2)
+    S.H(0).H(1).H(2).CX(0, 1).CZ(1, 2).S(1).Y(2).CX(2, 0).Z(1)
+    S.MeasX(1)
+    if validate:
+        S.validate()
+
+
+def test_complicated_circuit_2():
+    global validate
+    S = Simplex(3)
+    S.H(0).H(1).H(2).CX(0, 1).CZ(1, 2).S(1).Y(2).CX(2, 0).Z(1)
+    S.S(0).S(1).S(2).CX(1, 2).CX(0, 1).H(0)
+    if validate:
+        S.validate()
+
+
+def test_complicated_x_cx_circuit():
+    global validate
+    S = Simplex(4)
+    S.X(0).X(2).CX(0, 3).CX(3, 1).X(1).CX(0, 1).X(3).CX(3, 2).X(2).CX(1, 2).X(1)
+    S.CX(1, 2).CX(1, 3)
+    b = [S.MeasZ(i) for i in range(4)]
+    assert b == [1, 0, 1, 0]
+    assert S.is_deterministic()
+    if validate:
+        S.validate()
+
+
+def test_invert():
+    global validate
+    # Follow a circuit with its inverse, then measure.
+    S = Simplex(3)
+    S.H(0).CX(0, 1)
+    S.S(1)
+    S.Y(2).CZ(1, 2).H(2).CX(2, 1).Z(0).X(1).CZ(0, 1)
+    S.CZ(0, 1).X(1).Z(0).CX(2, 1).H(2).CZ(1, 2).Y(2)
+    S.Sdg(1)
+    S.CX(0, 1).H(0)
+    b = [S.MeasZ(i) for i in range(3)]
+    assert b == [0, 0, 0]
+    if validate:
+        S.validate()
+
+
+def test_measurements():
+    global validate
+    # Succeeding measurement in the same basis yields the same result.
+    # X,X
+    for coins in product([0, 1], repeat=2):
+        S = Simplex(1)
+        b = S.MeasX(0, coin=coins[0])
+        assert S.MeasX(0, coins[1]) == b
+    # Y,Y
+    for coins in product([0, 1], repeat=2):
+        S = Simplex(1)
+        b = S.MeasY(0, coin=coins[0])
+        assert S.MeasY(0, coins[1]) == b
+    # Z,Z
+    for coins in product([0, 1], repeat=2):
+        S = Simplex(1)
+        S.H(0)
+        b = S.MeasZ(0, coin=coins[0])
+        assert S.MeasZ(0, coins[1]) == b
+    # Succeeding orthogonal measurement yields 0 or 1 with equal probability.
+    # X,Y
+    for coin in range(2):
+        S = Simplex(1)
+        S.MeasX(0, coin=coin)
+        assert S.copy().MeasY(0, coin=0) != S.copy().MeasY(0, coin=1)
+    # X,Z
+    for coin in range(2):
+        S = Simplex(1)
+        S.MeasX(0, coin=coin)
+        assert S.copy().MeasZ(0, coin=0) != S.copy().MeasZ(0, coin=1)
+    # Y,Z
+    for coin in range(2):
+        S = Simplex(1)
+        S.MeasY(0, coin=coin)
+        assert S.copy().MeasZ(0, coin=0) != S.copy().MeasZ(0, coin=1)
+    # Y,X
+    for coin in range(2):
+        S = Simplex(1)
+        S.MeasY(0, coin=coin)
+        assert S.copy().MeasX(0, coin=0) != S.copy().MeasX(0, coin=1)
+    # Z,X
+    for coin in range(2):
+        S = Simplex(1)
+        S.H(0)
+        S.MeasZ(0, coin=coin)
+        assert S.copy().MeasX(0, coin=0) != S.copy().MeasX(0, coin=1)
+    # Z,Y
+    for coin in range(2):
+        S = Simplex(1)
+        S.H(0)
+        S.MeasZ(0, coin=coin)
+        assert S.copy().MeasY(0, coin=0) != S.copy().MeasY(0, coin=1)
+
+
+def calculate_dist(cmds, n, meas_basis="Z"):
+    if meas_basis in ["X", "Y", "Z"]:
+        meas_basis = [meas_basis] * n
+    else:
+        assert len(meas_basis) == n
+    c = Circuit(n)
+    for op, args in cmds:
+        if op == "X":
+            c.X(*args)
+        elif op == "Y":
+            c.Y(*args)
+        elif op == "Z":
+            c.Z(*args)
+        elif op == "H":
+            c.H(*args)
+        elif op == "S":
+            c.S(*args)
+        elif op == "Sdg":
+            c.Sdg(*args)
+        elif op == "CX":
+            c.CX(*args)
+        elif op == "CZ":
+            c.CZ(*args)
+        else:
+            raise ValueError(f"Unexpected op '{op}'")
+    for i in range(n):
+        m = meas_basis[i]
+        if m == "X":
+            c.H(i)
+        elif m == "Y":
+            c.Sdg(i)
+            c.H(i)
+        else:
+            assert m == "Z"
+    s = c.get_statevector()
+    p = probs_from_state(s)
+    pow2n = pow(2, n)
+    ctr = Counter()
+    for k, v in p.items():
+        ctr[k] += int(pow2n * v + 0.5)
+    return ctr
+
+
+def observe_dist(cmds, n, meas_basis="Z"):
+    if meas_basis in ["X", "Y", "Z"]:
+        meas_basis = [meas_basis] * n
+    else:
+        assert len(meas_basis) == n
+    S = Simplex(n)
+    for op, args in cmds:
+        if op == "X":
+            S.X(*args)
+        elif op == "Y":
+            S.Y(*args)
+        elif op == "Z":
+            S.Z(*args)
+        elif op == "H":
+            S.H(*args)
+        elif op == "S":
+            S.S(*args)
+        elif op == "Sdg":
+            S.Sdg(*args)
+        elif op == "CX":
+            S.CX(*args)
+        elif op == "CZ":
+            S.CZ(*args)
+        else:
+            raise ValueError(f"Unexpected op '{op}'")
+    ctr = Counter()
+    for coins in product([0, 1], repeat=n):
+        T = S.copy()
+        l = []
+        for i in range(n):
+            m = meas_basis[i]
+            if m == "X":
+                v = T.MeasX(i, coin=coins[i])
+            elif m == "Y":
+                v = T.MeasY(i, coin=coins[i])
+            else:
+                assert m == "Z"
+                v = T.MeasZ(i, coin=coins[i])
+            l.append(v)
+        ctr[tuple(l)] += 1
+    return ctr
+
+
+def check_dist(circ, meas_basis="Z"):
+    cmds = []
+    n = 0
+    for line in circ.strip().split("\n"):
+        elts = line.strip().split(" ")
+        op = elts[0]
+        args = list(map(int, elts[1:]))
+        cmds.append((op, args))
+        max_arg = max(args) + 1
+        if max_arg > n:
+            n = max_arg
+    dist = calculate_dist(cmds, n, meas_basis=meas_basis)
+    obs_dist = observe_dist(cmds, n, meas_basis=meas_basis)
+    if dist != obs_dist:
+        print("Distribution error for circuit:")
+        print(circ)
+        print("Measurement basis:", meas_basis)
+        print("Calculated:")
+        print(dist)
+        print("Observed:")
+        print(obs_dist)
+        assert False
+
+
+def test_dists(meas_basis="Z"):
+    check_dist(
+        """
+        H 0
+        CX 0 1
+        """,
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        H 0
+        CX 0 1
+        CX 0 2""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        H 1
+        CX 1 2
+        CZ 2 0
+        S 0
+        CX 0 2
+        H 1
+        Sdg 1
+        S 0
+        CX 1 0""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        H 0
+        H 1
+        H 2""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        H 1
+        X 0
+        CX 1 0""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        Y 0
+        H 1
+        CX 1 2
+        Sdg 2
+        CZ 0 2
+        Z 0
+        S 1
+        CX 1 0""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        H 0
+        H 1
+        H 2
+        Sdg 1
+        CZ 0 1
+        S 1
+        CZ 1 2
+        H 0
+        H 1
+        H 2""",
+        meas_basis=meas_basis,
+    )
+    check_dist(
+        """
+        X 0
+        H 0
+        CX 0 1
+        S 1
+        Y 2
+        CZ 1 2
+        H 2
+        Sdg 0
+        Z 2
+        Y 2
+        CX 2 0""",
+        meas_basis=meas_basis,
+    )
+
+
+def test_dists_mixed():
+    check_dist(
+        """
+        H 0
+        CX 0 1
+        """,
+        meas_basis=["X", "Y"],
+    )
+    check_dist(
+        """
+        H 0
+        CX 0 1
+        CX 0 2""",
+        meas_basis=["Y", "Z", "X"],
+    )
+    check_dist(
+        """
+        H 1
+        CX 1 2
+        CZ 2 0
+        S 0
+        CX 0 2
+        H 1
+        Sdg 1
+        S 0
+        CX 1 0""",
+        meas_basis=["X", "X", "Y"],
+    )
+    check_dist(
+        """
+        H 0
+        H 1
+        H 2""",
+        meas_basis=["Z", "Y", "X"],
+    )
+    check_dist(
+        """
+        H 1
+        X 0
+        CX 1 0""",
+        meas_basis=["Z", "Y"],
+    )
+    check_dist(
+        """
+        Y 0
+        H 1
+        CX 1 2
+        Sdg 2
+        CZ 0 2
+        Z 0
+        S 1
+        CX 1 0""",
+        meas_basis=["X", "Z", "Y"],
+    )
+    check_dist(
+        """
+        X 0
+        H 0
+        CX 0 1
+        S 1
+        Y 2
+        CZ 1 2
+        H 2
+        Sdg 0
+        Z 2
+        Y 2
+        CX 2 0""",
+        meas_basis=["X", "Y", "Z"],
+    )
+    check_dist(
+        """
+        H 0
+        H 1
+        H 2
+        Sdg 1
+        CZ 0 1
+        S 1
+        CZ 1 2
+        H 0
+        H 1
+        H 2""",
+        meas_basis=["Y", "X", "Y"],
+    )
+
+
+def test_mid_circ_meas():
+    # [X; MZ; X; MZ] should yield 1 then 0:
+    S = Simplex(1)
+    S.X(0)
+    assert S.MeasZ(0) == 1
+    S.X(0)
+    assert S.MeasZ(0) == 0
+    # Replace first MZ with [H; MX; H]:
+    S = Simplex(1)
+    S.X(0).H(0)
+    assert S.MeasX(0) == 1
+    S.H(0).X(0)
+    assert S.MeasZ(0) == 0
+    # Replace first MZ with [H; S; MY; S*; H]:
+    S = Simplex(1)
+    S.X(0).H(0).S(0)
+    assert S.MeasY(0) == 1
+    S.Sdg(0).H(0).X(0)
+    assert S.MeasZ(0) == 0
+    # A more complicated circuit that ends in the (1,1) state:
+    S = Simplex(2)
+    S.X(0).CX(0, 1).S(1).CX(1, 0).CZ(0, 1).CX(1, 0).S(1).Z(0)
+    T = S.copy()
+    assert T.MeasZ(0) == 1
+    assert T.MeasZ(1) == 1
+    T.Z(0).Sdg(1).CX(1, 0).CZ(0, 1).CX(1, 0).Sdg(1).CX(0, 1).X(0)
+    assert T.MeasZ(0) == 0
+    assert T.MeasZ(1) == 0
+    # Replace each first MZ with [H; MX; H]:
+    T = S.copy()
+    T.H(0).H(1)
+    assert T.MeasX(0) == 1
+    assert T.MeasX(1) == 1
+    T.H(0).H(1)
+    T.Z(0).Sdg(1).CX(1, 0).CZ(0, 1).CX(1, 0).Sdg(1).CX(0, 1).X(0)
+    assert T.MeasZ(0) == 0
+    assert T.MeasZ(1) == 0
+    # Replace each first MZ with [H; S; MY; S*; H]:
+    T = S.copy()
+    T.H(0).S(0).H(1).S(1)
+    assert T.MeasY(0) == 1
+    assert T.MeasY(1) == 1
+    T.Sdg(0).H(0).Sdg(1).H(1)
+    T.Z(0).Sdg(1).CX(1, 0).CZ(0, 1).CX(1, 0).Sdg(1).CX(0, 1).X(0)
+    assert T.MeasZ(0) == 0
+    assert T.MeasZ(1) == 0
+
+
+def run_all_tests():
+    test_X()
+    test_Z()
+    test_Y()
+    test_H()
+    test_S()
+    test_CZ()
+    test_CX()
+    test_MeasZ()
+    test_MeasX()
+    test_MeasY()
+    test_many_qubits()
+    test_complicated_circuit_1()
+    test_complicated_circuit_2()
+    test_complicated_x_cx_circuit()
+    test_invert()
+    test_measurements()
+    test_dists(meas_basis="X")
+    test_dists(meas_basis="Y")
+    test_dists(meas_basis="Z")
+    test_dists_mixed()
+    test_mid_circ_meas()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test Simplex Clifford simulator.")
+    parser.add_argument(
+        "--validate",
+        dest="validate",
+        default=False,
+        action="store_true",
+        help="perform internal validation (slow, requires sage)",
+    )
+    args = parser.parse_args()
+    validate = args.validate
+    run_all_tests()
