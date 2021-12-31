@@ -272,7 +272,7 @@ class QFE:
                         n = n0
             self.ReindexSwapColumns(k, self.r - 1)
             self.MakePrincipal(self.r - 1, j)
-            self.FixFinalBit(beta)
+            self.FixFinalBit(beta ^ self.b[j])
             return beta
 
     def SimulateMeasX(self, j, coin=None):
