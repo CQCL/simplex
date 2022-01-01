@@ -11,7 +11,6 @@ class QFE:
         """n: number of qubits"""
         self.n = n  # n = number of rows of A and b
         self.r = 0  # n >= r = number of rows/cols of Q, number of cols of A
-        self.g = 0  # exponent of tau
         self.Q = np.zeros(
             (n + 1, n + 1), dtype=int
         )  # rxr matrix (mod 4), extra row and col are for temporary use
@@ -25,7 +24,6 @@ class QFE:
     def copy(self):
         other = QFE(self.n)
         other.r = self.r
-        other.g = self.g
         other.Q = np.copy(self.Q)
         other.A = np.copy(self.A)
         other.b = np.copy(self.b)
@@ -36,7 +34,6 @@ class QFE:
     def show(self):
         print("n =", self.n)
         print("r =", self.r)
-        print("g =", self.g)
         print("Q:")
         print(self.Q[: self.r, : self.r])
         print("A:")
@@ -155,7 +152,6 @@ class QFE:
             self.Q[i, i] += 2 * z * q[i]
             self.Q[i, i] %= 4
         self.b ^= z * a
-        self.g += 2 * z * u
 
     def ZeroColumnElim(self, c):
         """Reduces r by 1 or 2."""
@@ -170,7 +166,6 @@ class QFE:
         if u % 2 == 1:
             self.Q[: self.r, : self.r] += (u - 2) * q @ q.transpose()
             self.Q[: self.r, : self.r] %= 4
-            self.g -= u - 2
         else:
             l = 0
             while l < self.r:
@@ -189,15 +184,11 @@ class QFE:
         self.b[j] ^= 1
 
     def SimulateZ(self, j):
-        self.g += 4 * self.b[j]
-        self.g %= 8
         for i in range(self.r):
             self.Q[i, i] += 2 * self.A[j, i]
             self.Q[i, i] %= 4
 
     def SimulateY(self, j):
-        self.g += 2
-        self.g %= 8
         self.SimulateZ(j)
         self.SimulateX(j)
 
@@ -226,7 +217,6 @@ class QFE:
         for k in range(self.r):
             if self.A[j, k] == 1:
                 self.ReduceGramRowCol(k)
-        self.g += 2 * self.b[j]
 
     def SimulateSdg(self, j):
         a = np.copy(self.A[[j], : self.r])
@@ -234,7 +224,6 @@ class QFE:
         for k in range(self.r):
             if self.A[j, k] == 1:
                 self.ReduceGramRowCol(k)
-        self.g -= 2 * self.b[j]
 
     def SimulateCZ(self, j, k):
         assert j != k
@@ -246,7 +235,6 @@ class QFE:
         for h in range(self.r):
             if self.A[j, h] == 1 or self.A[k, h] == 1:
                 self.ReduceGramRowCol(h)
-        self.g += 4 * self.b[j] * self.b[k]
 
     def SimulateCX(self, h, j):
         assert h != j
