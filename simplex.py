@@ -323,7 +323,7 @@ class QFE:
         self.p.inverse[j] = self.r
         self.Q[self.r, : self.r + 1] = 0
         self.Q[: self.r + 1, self.r] = 0
-        self.Q[: self.r, : self.r] += (2 * self.b[j] + 2 * beta + 1) * a.transpose() @ a
+        self.Q[: self.r, : self.r] += (2 * self.b[j] + 2 * beta - 1) * a.transpose() @ a
         self.Q[self.r, self.r] = 2 * beta + 1
         for k in range(self.r):
             if a[0, k] == 1:
