@@ -154,9 +154,9 @@ class QFE:
         assert z in [0, 1]
         r = self.r
         assert r > 0
-        self.b ^= z * self.A[:, r - 1]
+        self.b ^= z & self.A[:, r - 1]
         self.decrement_r()
-        self.R1[: self.r] ^= z * self.Q[: self.r, self.r]
+        self.R1[: self.r] ^= z & self.Q[: self.r, self.r]
 
     def ZeroColumnElim(self, c):
         """Reduces r by 1 or 2."""
@@ -225,7 +225,7 @@ class QFE:
         H_k = [h for h in range(self.r) if self.A[k, h] == 1]
         self.Q[np.ix_(H_j, H_k)] ^= 1
         self.Q[np.ix_(H_k, H_j)] ^= 1
-        self.R1[: self.r] ^= self.A[j, : self.r] * self.A[k, : self.r]
+        self.R1[: self.r] ^= self.A[j, : self.r] & self.A[k, : self.r]
         self.R1[H_j] ^= self.b[k]
         self.R1[H_k] ^= self.b[j]
 
@@ -270,7 +270,7 @@ class QFE:
                 return beta
         self.Q[self.r, : self.r] = 0
         self.Q[: self.r, self.r] = 0
-        self.R1[: self.r] ^= beta * self.A[j, : self.r]
+        self.R1[: self.r] ^= beta & self.A[j, : self.r]
         self.R1[self.r] = beta
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
