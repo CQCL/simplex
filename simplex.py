@@ -13,7 +13,8 @@ class QFE:
         self.r = 0  # n >= r = number of rows/cols of Q, number of cols of A
         self.Q = np.zeros(
             (n + 1, n + 1), dtype=int
-        )  # rxr matrix (mod 4), extra row and col are for temporary use
+        )  # rxr off-diagonal symmetric matrix (mod 2), extra row and col are for temporary use
+        self.R = np.zeros(n + 1, dtype=int)  # diagonal of Q (mod 4)
         self.A = np.zeros(
             (n, n + 1), dtype=int
         )  # nxr matrix (mod 2), extra col is for temporary use
@@ -25,6 +26,7 @@ class QFE:
         other = QFE(self.n)
         other.r = self.r
         other.Q = np.copy(self.Q)
+        other.R = np.copy(self.R)
         other.A = np.copy(self.A)
         other.b = np.copy(self.b)
         other.p = bidict(self.p)
@@ -36,6 +38,8 @@ class QFE:
         print("r =", self.r)
         print("Q:")
         print(self.Q[: self.r, : self.r])
+        print("R:")
+        print(self.R[: self.r])
         print("A:")
         print(self.A[:, : self.r])
         print("b:", self.b)
@@ -49,12 +53,12 @@ class QFE:
 
     def validate(self):
         assert self.r <= self.n
-        assert all(self.Q[i, i] in range(4) for i in range(self.r))
+        assert all(self.R[i] in range(4) for i in range(self.r))
         assert all(
-            self.Q[i, j] in range(2)
-            for i in range(self.r)
-            for j in range(self.r)
-            if i != j
+            self.Q[i, j] in range(2) for i in range(self.r) for j in range(self.r)
+        )
+        assert all(
+            self.Q[i, j] == self.Q[j, i] for i in range(self.r) for j in range(self.r)
         )
         assert all(
             self.A[i, j] in range(2) for i in range(self.n) for j in range(self.r)
@@ -73,24 +77,16 @@ class QFE:
             assert coin in [0, 1]
             return coin
 
-    def ReduceGramRowCol(self, c):
-        assert c < self.r
-        for k in range(self.r):
-            if k == c:
-                self.Q[k, k] %= 4
-            else:
-                self.Q[c, k] %= 2
-                self.Q[k, c] %= 2
-
     def ReindexSubtColumn(self, k, c):
         assert k < self.r
         assert c < self.r
         if k == c:
             return
         self.A[:, k] ^= self.A[:, c]
-        self.Q[: self.r, k] -= self.Q[: self.r, c]
-        self.Q[k, : self.r] -= self.Q[c, : self.r]
-        self.ReduceGramRowCol(k)
+        self.R[k] += 2 * self.Q[c, k]  # Q is symmetric
+        self.R[k] %= 4
+        self.Q[: self.r, k] ^= self.Q[: self.r, c]
+        self.Q[k, : self.r] ^= self.Q[c, : self.r]
 
     def ReindexSwapColumns(self, k, c):
         assert k < self.r
@@ -98,6 +94,7 @@ class QFE:
         if k == c:
             return
         self.A[:, [k, c]] = self.A[:, [c, k]]
+        self.R[[k, c]] = self.R[[c, k]]
         self.Q[:, [k, c]] = self.Q[:, [c, k]]
         self.Q[[k, c], :] = self.Q[[c, k], :]
         # Swap p[k] and p[c]:
@@ -153,11 +150,11 @@ class QFE:
         r = self.r
         assert r > 0
         a = self.A[:, r - 1]
-        u = self.Q[r - 1, r - 1]
+        u = self.R[r - 1]
         self.decrement_r()
         for i in range(self.r):
-            self.Q[i, i] += 2 * z * self.Q[i, self.r]
-            self.Q[i, i] %= 4
+            self.R[i] += 2 * z * self.Q[i, self.r]
+            self.R[i] %= 4
         self.b ^= z * a
 
     def ZeroColumnElim(self, c):
@@ -168,13 +165,15 @@ class QFE:
         assert all(self.A[:, c] == 0)
         self.ReindexSwapColumns(c, r - 1)
         H = [h for h in range(r - 1) if self.Q[h, r - 1] == 1]
-        u = self.Q[r - 1, r - 1]
+        u = self.R[r - 1]
         self.decrement_r()
         if u % 2 == 1:
             for h1 in H:
                 for h2 in H:
-                    self.Q[h1, h2] += u - 2
-                    self.Q[h1, h2] %= 4
+                    self.Q[h1, h2] ^= 1
+            for h in H:
+                self.R[h] += u + 2
+                self.R[h] %= 4
         else:
             if len(H) == 0:
                 return
@@ -190,8 +189,8 @@ class QFE:
 
     def SimulateZ(self, j):
         for i in range(self.r):
-            self.Q[i, i] += 2 * self.A[j, i]
-            self.Q[i, i] %= 4
+            self.R[i] += 2 * self.A[j, i]
+            self.R[i] %= 4
 
     def SimulateY(self, j):
         self.SimulateZ(j)
@@ -201,7 +200,7 @@ class QFE:
         c = self.principate(j)
         self.Q[self.r, : self.r] = self.A[j, : self.r]
         self.Q[: self.r, self.r] = self.A[j, : self.r]
-        self.Q[self.r, self.r] = 2 * self.b[j]
+        self.R[self.r] = 2 * self.b[j]
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -213,21 +212,23 @@ class QFE:
 
     def SimulateS(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        v = 1 - 2 * self.b[j]
         for h1 in H:
             for h2 in H:
-                self.Q[h1, h2] += v
+                self.Q[h1, h2] ^= 1
+        v = 1 - 2 * self.b[j]
         for h in H:
-            self.ReduceGramRowCol(h)
+            self.R[h] += v
+            self.R[h] %= 4
 
     def SimulateSdg(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
         v = 1 - 2 * self.b[j]
         for h1 in H:
             for h2 in H:
-                self.Q[h1, h2] -= v
+                self.Q[h1, h2] ^= 1
         for h in H:
-            self.ReduceGramRowCol(h)
+            self.R[h] -= v
+            self.R[h] %= 4
 
     def SimulateCZ(self, j, k):
         assert j != k
@@ -235,16 +236,19 @@ class QFE:
         H_k = set(h for h in range(self.r) if self.A[k, h] == 1)
         for h1 in H_j:
             for h2 in H_k:
-                self.Q[h1, h2] += 1
-                self.Q[h2, h1] += 1
+                self.Q[h1, h2] ^= 1
+                self.Q[h2, h1] ^= 1
+        for h in H_j & H_k:
+            self.R[h] += 2
+            self.R[h] %= 4
         v_k = 2 * self.b[k]
         for h in H_j:
-            self.Q[h, h] += v_k
+            self.R[h] += v_k
+            self.R[h] %= 4
         v_j = 2 * self.b[j]
         for h in H_k:
-            self.Q[h, h] += v_j
-        for h in H_j | H_k:
-            self.ReduceGramRowCol(h)
+            self.R[h] += v_j
+            self.R[h] %= 4
 
     def SimulateCX(self, h, j):
         assert h != j
@@ -275,25 +279,23 @@ class QFE:
 
     def SimulateMeasX(self, j, coin=None):
         c = self.principate(j)
-        if (c is None) or any(self.Q[c, k] != 0 for k in range(self.r) if k != c):
+        if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
-            if self.Q[c, c] == 0:
+            if self.R[c] == 0:
                 return 0
-            elif self.Q[c, c] == 2:
+            elif self.R[c] == 2:
                 return 1
             else:
                 beta = self.toss_coin(coin)
-                self.Q[c, c] = 2 * beta
+                self.R[c] = 2 * beta
                 return beta
-        self.Q[self.r, : self.r + 1] = 0
-        self.Q[: self.r + 1, self.r] = 0
+        self.Q[self.r, : self.r] = 0
+        self.Q[: self.r, self.r] = 0
         for h in range(self.r):
-            self.Q[h, h] += 2 * beta * self.A[j, h]
-        self.Q[self.r, self.r] = 2 * beta
-        for k in range(self.r):
-            if self.A[j, k] == 1:
-                self.Q[k, k] %= 4
+            self.R[h] += 2 * beta * self.A[j, h]
+            self.R[h] %= 4
+        self.R[self.r] = 2 * beta
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -306,27 +308,28 @@ class QFE:
 
     def SimulateMeasY(self, j, coin=None):
         c = self.principate(j)
-        if (c is None) or any(self.Q[c, k] != 0 for k in range(self.r) if k != c):
+        if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
-            if self.Q[c, c] == 1:
+            if self.R[c] == 1:
                 return 0
-            elif self.Q[c, c] == 3:
+            elif self.R[c] == 3:
                 return 1
             else:
                 beta = self.toss_coin(coin)
-                self.Q[c, c] = 2 * beta + 1
+                self.R[c] = 2 * beta + 1
                 return beta
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.Q[self.r, : self.r + 1] = 0
-        self.Q[: self.r + 1, self.r] = 0
+        self.Q[self.r, : self.r] = 0
+        self.Q[: self.r, self.r] = 0
         v = 2 * self.b[j] + 2 * beta - 1
         for h1 in H:
             for h2 in H:
-                self.Q[h1, h2] += v
-        self.Q[self.r, self.r] = 2 * beta + 1
+                self.Q[h1, h2] ^= 1
         for h in H:
-            self.ReduceGramRowCol(h)
+            self.R[h] += v
+            self.R[h] %= 4
+        self.R[self.r] = 2 * beta + 1
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
