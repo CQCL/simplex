@@ -189,12 +189,9 @@ class QFE:
         self.SimulateZ(j)
         self.SimulateX(j)
 
-    def SimulateH(self, j):
-        c = self.principate(j)
-        self.Q[self.r, : self.r] = self.A[j, : self.r]
-        self.Q[: self.r, self.r] = self.A[j, : self.r]
-        self.R0[self.r] = 0
-        self.R1[self.r] = self.b[j]
+    def new_principal_column(self, j, c=None):
+        """Set row j of A to zero, append new principal column e_j to A, set b[j] to 0,
+        and optionally eliminate the all-zero column c."""
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -203,6 +200,14 @@ class QFE:
         self.r += 1
         if c is not None:
             self.ZeroColumnElim(c)
+
+    def SimulateH(self, j):
+        c = self.principate(j)
+        self.Q[self.r, : self.r] = self.A[j, : self.r]
+        self.Q[: self.r, self.r] = self.A[j, : self.r]
+        self.R0[self.r] = 0
+        self.R1[self.r] = self.b[j]
+        self.new_principal_column(j, c)
 
     def SimulateS(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
@@ -269,14 +274,7 @@ class QFE:
         self.Q[: self.r, self.r] = 0
         self.R1[: self.r] ^= beta & self.A[j, : self.r]
         self.R1[self.r] = beta
-        self.A[j, : self.r] = 0
-        self.A[:, self.r] = 0
-        self.A[j, self.r] = 1
-        self.p.inverse[j] = self.r
-        self.r += 1
-        self.b[j] = 0
-        if c is not None:
-            self.ZeroColumnElim(c)
+        self.new_principal_column(j, c)
         return beta
 
     def SimulateMeasY(self, j, coin=None):
@@ -299,14 +297,7 @@ class QFE:
         self.Q[: self.r, self.r] = 0
         self.R0[self.r] = 1
         self.R1[self.r] = beta
-        self.A[j, : self.r] = 0
-        self.A[:, self.r] = 0
-        self.A[j, self.r] = 1
-        self.p.inverse[j] = self.r
-        self.r += 1
-        self.b[j] = 0
-        if c is not None:
-            self.ZeroColumnElim(c)
+        self.new_principal_column(j, c)
         return beta
 
 
