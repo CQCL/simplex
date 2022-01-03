@@ -152,12 +152,11 @@ class QFE:
         assert z in [0, 1]
         r = self.r
         assert r > 0
-        a = np.copy(self.A[:, r - 1])
-        q = np.copy(self.Q[: r - 1, r - 1])
+        a = self.A[:, r - 1]
         u = self.Q[r - 1, r - 1]
         self.decrement_r()
         for i in range(self.r):
-            self.Q[i, i] += 2 * z * q[i]
+            self.Q[i, i] += 2 * z * self.Q[i, self.r]
             self.Q[i, i] %= 4
         self.b ^= z * a
 
@@ -168,7 +167,7 @@ class QFE:
         assert c < r
         assert all(self.A[:, c] == 0)
         self.ReindexSwapColumns(c, r - 1)
-        q = np.copy(self.Q[: r - 1, [r - 1]])
+        q = self.Q[: r - 1, [r - 1]]
         u = self.Q[r - 1, r - 1]
         self.decrement_r()
         if u % 2 == 1:
@@ -202,28 +201,27 @@ class QFE:
 
     def SimulateH(self, j):
         c = self.principate(j)
-        a = np.copy(self.A[j, : self.r])
+        self.Q[self.r, : self.r] = self.A[j, : self.r]
+        self.Q[: self.r, self.r] = self.A[j, : self.r]
+        self.Q[self.r, self.r] = 2 * self.b[j]
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
         self.p.inverse[j] = self.r
-        self.Q[self.r, : self.r] = a
-        self.Q[: self.r, self.r] = a
-        self.Q[self.r, self.r] = 2 * self.b[j]
         self.b[j] = 0
         self.r += 1
         if c is not None:
             self.ZeroColumnElim(c)
 
     def SimulateS(self, j):
-        a = np.copy(self.A[[j], : self.r])
+        a = self.A[[j], : self.r]
         self.Q[: self.r, : self.r] += (1 - 2 * self.b[j]) * a.transpose() @ a
         for k in range(self.r):
             if self.A[j, k] == 1:
                 self.ReduceGramRowCol(k)
 
     def SimulateSdg(self, j):
-        a = np.copy(self.A[[j], : self.r])
+        a = self.A[[j], : self.r]
         self.Q[: self.r, : self.r] -= (1 - 2 * self.b[j]) * a.transpose() @ a
         for k in range(self.r):
             if self.A[j, k] == 1:
@@ -231,8 +229,8 @@ class QFE:
 
     def SimulateCZ(self, j, k):
         assert j != k
-        a_j = np.copy(self.A[[j], : self.r])
-        a_k = np.copy(self.A[[k], : self.r])
+        a_j = self.A[[j], : self.r]
+        a_k = self.A[[k], : self.r]
         self.Q[: self.r, : self.r] += a_j.transpose() @ a_k + a_k.transpose() @ a_j
         for h in range(self.r):
             self.Q[h, h] += 2 * (self.b[k] * a_j[0, h] + self.b[j] * a_k[0, h])
@@ -280,19 +278,18 @@ class QFE:
                 beta = self.toss_coin(coin)
                 self.Q[c, c] = 2 * beta
                 return beta
-        a = np.copy(self.A[j, : self.r])
+        self.Q[self.r, : self.r + 1] = 0
+        self.Q[: self.r + 1, self.r] = 0
+        for h in range(self.r):
+            self.Q[h, h] += 2 * beta * self.A[j, h]
+        self.Q[self.r, self.r] = 2 * beta
+        for k in range(self.r):
+            if self.A[j, k] == 1:
+                self.Q[k, k] %= 4
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
         self.p.inverse[j] = self.r
-        self.Q[self.r, : self.r + 1] = 0
-        self.Q[: self.r + 1, self.r] = 0
-        for h in range(self.r):
-            self.Q[h, h] += 2 * beta * a[h]
-        self.Q[self.r, self.r] = 2 * beta
-        for k in range(self.r):
-            if a[k] == 1:
-                self.Q[k, k] %= 4
         self.r += 1
         self.b[j] = 0
         if c is not None:
@@ -312,11 +309,7 @@ class QFE:
                 beta = self.toss_coin(coin)
                 self.Q[c, c] = 2 * beta + 1
                 return beta
-        a = np.copy(self.A[[j], : self.r])
-        self.A[j, : self.r] = 0
-        self.A[:, self.r] = 0
-        self.A[j, self.r] = 1
-        self.p.inverse[j] = self.r
+        a = self.A[[j], : self.r]
         self.Q[self.r, : self.r + 1] = 0
         self.Q[: self.r + 1, self.r] = 0
         self.Q[: self.r, : self.r] += (2 * self.b[j] + 2 * beta - 1) * a.transpose() @ a
@@ -324,6 +317,10 @@ class QFE:
         for k in range(self.r):
             if a[0, k] == 1:
                 self.ReduceGramRowCol(k)
+        self.A[j, : self.r] = 0
+        self.A[:, self.r] = 0
+        self.A[j, self.r] = 1
+        self.p.inverse[j] = self.r
         self.r += 1
         self.b[j] = 0
         if c is not None:
