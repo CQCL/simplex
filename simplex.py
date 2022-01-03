@@ -152,21 +152,18 @@ class QFE:
     def FixFinalBit(self, z):
         """Reduces r by 1."""
         assert z in [0, 1]
-        r = self.r
-        assert r > 0
-        self.b ^= z & self.A[:, r - 1]
+        assert self.r > 0
+        self.b ^= z & self.A[:, self.r - 1]
         self.decrement_r()
         self.R1[: self.r] ^= z & self.Q[: self.r, self.r]
 
     def ZeroColumnElim(self, c):
         """Reduces r by 1 or 2."""
-        r = self.r
-        assert r > 0
-        assert c < r
+        assert c < self.r
         assert all(self.A[:, c] == 0)
-        self.ReindexSwapColumns(c, r - 1)
-        H = [h for h in range(r - 1) if self.Q[h, r - 1] == 1]
-        u0, u1 = self.R0[r - 1], self.R1[r - 1]
+        self.ReindexSwapColumns(c, self.r - 1)
+        H = [h for h in range(self.r - 1) if self.Q[h, self.r - 1] == 1]
+        u0, u1 = self.R0[self.r - 1], self.R1[self.r - 1]
         self.decrement_r()
         if u0 == 1:
             self.Q[np.ix_(H, H)] ^= 1
@@ -177,10 +174,10 @@ class QFE:
                 return
             else:
                 l = H[0]
-            for h in H[1:]:
-                self.ReindexSubtColumn(h, l)
-            self.ReindexSwapColumns(self.r - 1, l)
-            self.FixFinalBit(u1)
+                for h in H[1:]:
+                    self.ReindexSubtColumn(h, l)
+                self.ReindexSwapColumns(self.r - 1, l)
+                self.FixFinalBit(u1)
 
     def SimulateX(self, j):
         self.b[j] ^= 1
@@ -295,11 +292,11 @@ class QFE:
                 self.R1[c] = beta
                 return beta
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.Q[self.r, : self.r] = 0
-        self.Q[: self.r, self.r] = 0
         self.Q[np.ix_(H, H)] ^= 1
         self.R0[H] ^= 1
         self.R1[H] ^= self.R0[H] ^ self.b[j] ^ beta
+        self.Q[self.r, : self.r] = 0
+        self.Q[: self.r, self.r] = 0
         self.R0[self.r] = 1
         self.R1[self.r] = beta
         self.A[j, : self.r] = 0
