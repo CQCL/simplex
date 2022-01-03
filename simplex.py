@@ -134,6 +134,14 @@ class QFE:
         if n0 is not None:
             self.MakePrincipal(c, j0)
 
+    def principate(self, j):
+        c = self.p.inverse.get(j)
+        if c is not None:
+            self.ReselectPrincipalRow(j, c)
+            if j != self.p[c]:
+                c = None
+        return c
+
     def decrement_r(self):
         if self.r - 1 in self.p:
             del self.p[self.r - 1]
@@ -193,11 +201,7 @@ class QFE:
         self.SimulateX(j)
 
     def SimulateH(self, j):
-        c = self.p.inverse.get(j)
-        if c is not None:
-            self.ReselectPrincipalRow(j, c)
-            if j != self.p[c]:
-                c = None
+        c = self.principate(j)
         a = np.copy(self.A[j, : self.r])
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
@@ -264,11 +268,7 @@ class QFE:
             return beta
 
     def SimulateMeasX(self, j, coin=None):
-        c = self.p.inverse.get(j)
-        if c is not None:
-            self.ReselectPrincipalRow(j, c)
-            if j != self.p[c]:
-                c = None
+        c = self.principate(j)
         if (c is None) or any(self.Q[c, k] != 0 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
@@ -300,11 +300,7 @@ class QFE:
         return beta
 
     def SimulateMeasY(self, j, coin=None):
-        c = self.p.inverse.get(j)
-        if c is not None:
-            self.ReselectPrincipalRow(j, c)
-            if j != self.p[c]:
-                c = None
+        c = self.principate(j)
         if (c is None) or any(self.Q[c, k] != 0 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
