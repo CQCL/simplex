@@ -167,23 +167,21 @@ class QFE:
         assert c < r
         assert all(self.A[:, c] == 0)
         self.ReindexSwapColumns(c, r - 1)
-        q = self.Q[: r - 1, [r - 1]]
+        H = [h for h in range(r - 1) if self.Q[h, r - 1] == 1]
         u = self.Q[r - 1, r - 1]
         self.decrement_r()
         if u % 2 == 1:
-            self.Q[: self.r, : self.r] += (u - 2) * q @ q.transpose()
-            self.Q[: self.r, : self.r] %= 4
+            for h1 in H:
+                for h2 in H:
+                    self.Q[h1, h2] += u - 2
+                    self.Q[h1, h2] %= 4
         else:
-            l = 0
-            while l < self.r:
-                if q[l, 0] == 1:
-                    break
-                l += 1
-            else:
+            if len(H) == 0:
                 return
-            for k in range(self.r):
-                if k != l and q[k, 0] != 0:
-                    self.ReindexSubtColumn(k, l)
+            else:
+                l = H[0]
+            for h in H[1:]:
+                self.ReindexSubtColumn(h, l)
             self.ReindexSwapColumns(self.r - 1, l)
             self.FixFinalBit(u // 2)
 
@@ -214,29 +212,39 @@ class QFE:
             self.ZeroColumnElim(c)
 
     def SimulateS(self, j):
-        a = self.A[[j], : self.r]
-        self.Q[: self.r, : self.r] += (1 - 2 * self.b[j]) * a.transpose() @ a
-        for k in range(self.r):
-            if self.A[j, k] == 1:
-                self.ReduceGramRowCol(k)
+        H = [h for h in range(self.r) if self.A[j, h] == 1]
+        v = 1 - 2 * self.b[j]
+        for h1 in H:
+            for h2 in H:
+                self.Q[h1, h2] += v
+        for h in H:
+            self.ReduceGramRowCol(h)
 
     def SimulateSdg(self, j):
-        a = self.A[[j], : self.r]
-        self.Q[: self.r, : self.r] -= (1 - 2 * self.b[j]) * a.transpose() @ a
-        for k in range(self.r):
-            if self.A[j, k] == 1:
-                self.ReduceGramRowCol(k)
+        H = [h for h in range(self.r) if self.A[j, h] == 1]
+        v = 1 - 2 * self.b[j]
+        for h1 in H:
+            for h2 in H:
+                self.Q[h1, h2] -= v
+        for h in H:
+            self.ReduceGramRowCol(h)
 
     def SimulateCZ(self, j, k):
         assert j != k
-        a_j = self.A[[j], : self.r]
-        a_k = self.A[[k], : self.r]
-        self.Q[: self.r, : self.r] += a_j.transpose() @ a_k + a_k.transpose() @ a_j
-        for h in range(self.r):
-            self.Q[h, h] += 2 * (self.b[k] * a_j[0, h] + self.b[j] * a_k[0, h])
-        for h in range(self.r):
-            if self.A[j, h] == 1 or self.A[k, h] == 1:
-                self.ReduceGramRowCol(h)
+        H_j = set(h for h in range(self.r) if self.A[j, h] == 1)
+        H_k = set(h for h in range(self.r) if self.A[k, h] == 1)
+        for h1 in H_j:
+            for h2 in H_k:
+                self.Q[h1, h2] += 1
+                self.Q[h2, h1] += 1
+        v_k = 2 * self.b[k]
+        for h in H_j:
+            self.Q[h, h] += v_k
+        v_j = 2 * self.b[j]
+        for h in H_k:
+            self.Q[h, h] += v_j
+        for h in H_j | H_k:
+            self.ReduceGramRowCol(h)
 
     def SimulateCX(self, h, j):
         assert h != j
@@ -309,14 +317,16 @@ class QFE:
                 beta = self.toss_coin(coin)
                 self.Q[c, c] = 2 * beta + 1
                 return beta
-        a = self.A[[j], : self.r]
+        H = [h for h in range(self.r) if self.A[j, h] == 1]
         self.Q[self.r, : self.r + 1] = 0
         self.Q[: self.r + 1, self.r] = 0
-        self.Q[: self.r, : self.r] += (2 * self.b[j] + 2 * beta - 1) * a.transpose() @ a
+        v = 2 * self.b[j] + 2 * beta - 1
+        for h1 in H:
+            for h2 in H:
+                self.Q[h1, h2] += v
         self.Q[self.r, self.r] = 2 * beta + 1
-        for k in range(self.r):
-            if a[0, k] == 1:
-                self.ReduceGramRowCol(k)
+        for h in H:
+            self.ReduceGramRowCol(h)
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
