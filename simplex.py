@@ -14,7 +14,8 @@ class QFE:
         self.Q = np.zeros(
             (n + 1, n + 1), dtype=int
         )  # rxr off-diagonal symmetric matrix (mod 2), extra row and col are for temporary use
-        self.R = np.zeros(n + 1, dtype=int)  # diagonal of Q (mod 4)
+        self.R0 = np.zeros(n + 1, dtype=int)  # diagonal of Q (mod 4), lsb (0 or 1)
+        self.R1 = np.zeros(n + 1, dtype=int)  # diagonal of Q (mod 4), msb (0 or 1)
         self.A = np.zeros(
             (n, n + 1), dtype=int
         )  # nxr matrix (mod 2), extra col is for temporary use
@@ -26,7 +27,8 @@ class QFE:
         other = QFE(self.n)
         other.r = self.r
         other.Q = np.copy(self.Q)
-        other.R = np.copy(self.R)
+        other.R0 = np.copy(self.R0)
+        other.R1 = np.copy(self.R1)
         other.A = np.copy(self.A)
         other.b = np.copy(self.b)
         other.p = bidict(self.p)
@@ -38,8 +40,10 @@ class QFE:
         print("r =", self.r)
         print("Q:")
         print(self.Q[: self.r, : self.r])
-        print("R:")
-        print(self.R[: self.r])
+        print("R0:")
+        print(self.R0[: self.r])
+        print("R1:")
+        print(self.R1[: self.r])
         print("A:")
         print(self.A[:, : self.r])
         print("b:", self.b)
@@ -53,7 +57,8 @@ class QFE:
 
     def validate(self):
         assert self.r <= self.n
-        assert all(self.R[i] in range(4) for i in range(self.r))
+        assert all(self.R0[i] in range(2) for i in range(self.r))
+        assert all(self.R1[i] in range(2) for i in range(self.r))
         assert all(
             self.Q[i, j] in range(2) for i in range(self.r) for j in range(self.r)
         )
@@ -83,8 +88,7 @@ class QFE:
         if k == c:
             return
         self.A[:, k] ^= self.A[:, c]
-        self.R[k] += 2 * self.Q[c, k]  # Q is symmetric
-        self.R[k] %= 4
+        self.R1[k] ^= self.Q[c, k]  # NB Q is symmetric
         self.Q[: self.r, k] ^= self.Q[: self.r, c]
         self.Q[k, : self.r] ^= self.Q[c, : self.r]
 
@@ -94,7 +98,8 @@ class QFE:
         if k == c:
             return
         self.A[:, [k, c]] = self.A[:, [c, k]]
-        self.R[[k, c]] = self.R[[c, k]]
+        self.R0[[k, c]] = self.R0[[c, k]]
+        self.R1[[k, c]] = self.R1[[c, k]]
         self.Q[:, [k, c]] = self.Q[:, [c, k]]
         self.Q[[k, c], :] = self.Q[[c, k], :]
         # Swap p[k] and p[c]:
@@ -150,11 +155,9 @@ class QFE:
         r = self.r
         assert r > 0
         a = self.A[:, r - 1]
-        u = self.R[r - 1]
         self.decrement_r()
         for i in range(self.r):
-            self.R[i] += 2 * z * self.Q[i, self.r]
-            self.R[i] %= 4
+            self.R1[i] ^= z * self.Q[i, self.r]
         self.b ^= z * a
 
     def ZeroColumnElim(self, c):
@@ -165,15 +168,15 @@ class QFE:
         assert all(self.A[:, c] == 0)
         self.ReindexSwapColumns(c, r - 1)
         H = [h for h in range(r - 1) if self.Q[h, r - 1] == 1]
-        u = self.R[r - 1]
+        u0, u1 = self.R0[r - 1], self.R1[r - 1]
         self.decrement_r()
-        if u % 2 == 1:
+        if u0 == 1:
             for h1 in H:
                 for h2 in H:
                     self.Q[h1, h2] ^= 1
             for h in H:
-                self.R[h] += u + 2
-                self.R[h] %= 4
+                self.R0[h] ^= 1
+                self.R1[h] ^= self.R0[h] ^ u1
         else:
             if len(H) == 0:
                 return
@@ -182,15 +185,14 @@ class QFE:
             for h in H[1:]:
                 self.ReindexSubtColumn(h, l)
             self.ReindexSwapColumns(self.r - 1, l)
-            self.FixFinalBit(u // 2)
+            self.FixFinalBit(u1)
 
     def SimulateX(self, j):
         self.b[j] ^= 1
 
     def SimulateZ(self, j):
         for i in range(self.r):
-            self.R[i] += 2 * self.A[j, i]
-            self.R[i] %= 4
+            self.R1[i] ^= self.A[j, i]
 
     def SimulateY(self, j):
         self.SimulateZ(j)
@@ -200,7 +202,8 @@ class QFE:
         c = self.principate(j)
         self.Q[self.r, : self.r] = self.A[j, : self.r]
         self.Q[: self.r, self.r] = self.A[j, : self.r]
-        self.R[self.r] = 2 * self.b[j]
+        self.R0[self.r] = 0
+        self.R1[self.r] = self.b[j]
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -215,20 +218,18 @@ class QFE:
         for h1 in H:
             for h2 in H:
                 self.Q[h1, h2] ^= 1
-        v = 1 - 2 * self.b[j]
         for h in H:
-            self.R[h] += v
-            self.R[h] %= 4
+            self.R1[h] ^= self.R0[h] ^ self.b[j]
+            self.R0[h] ^= 1
 
     def SimulateSdg(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        v = 1 - 2 * self.b[j]
         for h1 in H:
             for h2 in H:
                 self.Q[h1, h2] ^= 1
         for h in H:
-            self.R[h] -= v
-            self.R[h] %= 4
+            self.R0[h] ^= 1
+            self.R1[h] ^= self.R0[h] ^ self.b[j]
 
     def SimulateCZ(self, j, k):
         assert j != k
@@ -239,16 +240,11 @@ class QFE:
                 self.Q[h1, h2] ^= 1
                 self.Q[h2, h1] ^= 1
         for h in H_j & H_k:
-            self.R[h] += 2
-            self.R[h] %= 4
-        v_k = 2 * self.b[k]
+            self.R1[h] ^= 1
         for h in H_j:
-            self.R[h] += v_k
-            self.R[h] %= 4
-        v_j = 2 * self.b[j]
+            self.R1[h] ^= self.b[k]
         for h in H_k:
-            self.R[h] += v_j
-            self.R[h] %= 4
+            self.R1[h] ^= self.b[j]
 
     def SimulateCX(self, h, j):
         assert h != j
@@ -282,20 +278,18 @@ class QFE:
         if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
-            if self.R[c] == 0:
-                return 0
-            elif self.R[c] == 2:
-                return 1
+            if self.R0[c] == 0:
+                return self.R1[c]
             else:
                 beta = self.toss_coin(coin)
-                self.R[c] = 2 * beta
+                self.R0[c] = 0
+                self.R1[c] = beta
                 return beta
         self.Q[self.r, : self.r] = 0
         self.Q[: self.r, self.r] = 0
         for h in range(self.r):
-            self.R[h] += 2 * beta * self.A[j, h]
-            self.R[h] %= 4
-        self.R[self.r] = 2 * beta
+            self.R1[h] ^= beta * self.A[j, h]
+        self.R1[self.r] = beta
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -311,25 +305,24 @@ class QFE:
         if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
         else:
-            if self.R[c] == 1:
-                return 0
-            elif self.R[c] == 3:
-                return 1
+            if self.R0[c] == 1:
+                return self.R1[c]
             else:
                 beta = self.toss_coin(coin)
-                self.R[c] = 2 * beta + 1
+                self.R0[c] = 1
+                self.R1[c] = beta
                 return beta
         H = [h for h in range(self.r) if self.A[j, h] == 1]
         self.Q[self.r, : self.r] = 0
         self.Q[: self.r, self.r] = 0
-        v = 2 * self.b[j] + 2 * beta - 1
         for h1 in H:
             for h2 in H:
                 self.Q[h1, h2] ^= 1
         for h in H:
-            self.R[h] += v
-            self.R[h] %= 4
-        self.R[self.r] = 2 * beta + 1
+            self.R0[h] ^= 1
+            self.R1[h] ^= self.R0[h] ^ self.b[j] ^ beta
+        self.R0[self.r] = 1
+        self.R1[self.r] = beta
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
