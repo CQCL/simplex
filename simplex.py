@@ -75,6 +75,7 @@ class QFE:
         )
 
     def toss_coin(self, coin=None):
+        # O(1)
         self.deterministic = False
         if coin is None:
             return randrange(2)
@@ -83,6 +84,7 @@ class QFE:
             return coin
 
     def ReindexSubtColumn(self, k, c):
+        # O(n)
         assert k < self.r
         assert c < self.r
         if k == c:
@@ -93,6 +95,7 @@ class QFE:
         self.Q[k, : self.r] ^= self.Q[c, : self.r]
 
     def ReindexSwapColumns(self, k, c):
+        # O(n)
         assert k < self.r
         assert c < self.r
         if k == c:
@@ -114,6 +117,7 @@ class QFE:
             self.p[k] = pc
 
     def MakePrincipal(self, c, j):
+        # O(nr)
         assert c < self.r
         assert j < self.n
         if self.A[j, c] == 1:
@@ -123,6 +127,7 @@ class QFE:
             self.p[c] = j
 
     def ReselectPrincipalRow(self, j, c):
+        # O(nr)
         # 0 <= c < r, 0 <= j < n or j is None
         assert c < self.r
         assert j is None or j < self.n
@@ -137,6 +142,7 @@ class QFE:
             self.MakePrincipal(c, j0)
 
     def principate(self, j):
+        # O(nr)
         c = self.p.inverse.get(j)
         if c is not None:
             self.ReselectPrincipalRow(j, c)
@@ -145,12 +151,14 @@ class QFE:
         return c
 
     def decrement_r(self):
+        # O(1)
         if self.r - 1 in self.p:
             del self.p[self.r - 1]
         self.r -= 1
 
     def FixFinalBit(self, z):
-        """Reduces r by 1."""
+        # O(n)
+        # Reduces r by 1.
         assert z in [0, 1]
         assert self.r > 0
         self.b ^= z & self.A[:, self.r - 1]
@@ -158,7 +166,8 @@ class QFE:
         self.R1[: self.r] ^= z & self.Q[: self.r, self.r]
 
     def ZeroColumnElim(self, c):
-        """Reduces r by 1 or 2."""
+        # O(n)
+        # Reduces r by 1 or 2.
         assert c < self.r
         assert all(self.A[:, c] == 0)
         self.ReindexSwapColumns(c, self.r - 1)
@@ -180,18 +189,22 @@ class QFE:
                 self.FixFinalBit(u1)
 
     def SimulateX(self, j):
+        # O(1)
         self.b[j] ^= 1
 
     def SimulateZ(self, j):
+        # O(r)
         self.R1[: self.r] ^= self.A[j, : self.r]
 
     def SimulateY(self, j):
+        # O(r)
         self.SimulateZ(j)
         self.SimulateX(j)
 
     def new_principal_column(self, j, c=None):
-        """Set row j of A to zero, append new principal column e_j to A, set b[j] to 0,
-        and optionally eliminate the all-zero column c."""
+        # O(n)
+        # Set row j of A to zero, append new principal column e_j to A, set b[j] to 0,
+        # and optionally eliminate the all-zero column c.
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
         self.A[j, self.r] = 1
@@ -202,6 +215,7 @@ class QFE:
             self.ZeroColumnElim(c)
 
     def SimulateH(self, j):
+        # O(nr)
         c = self.principate(j)
         self.Q[self.r, : self.r] = self.A[j, : self.r]
         self.Q[: self.r, self.r] = self.A[j, : self.r]
@@ -210,18 +224,21 @@ class QFE:
         self.new_principal_column(j, c)
 
     def SimulateS(self, j):
+        # O(r^2)
         H = [h for h in range(self.r) if self.A[j, h] == 1]
         self.Q[np.ix_(H, H)] ^= 1
         self.R1[H] ^= self.R0[H] ^ self.b[j]
         self.R0[H] ^= 1
 
     def SimulateSdg(self, j):
+        # O(r^2)
         H = [h for h in range(self.r) if self.A[j, h] == 1]
         self.Q[np.ix_(H, H)] ^= 1
         self.R0[H] ^= 1
         self.R1[H] ^= self.R0[H] ^ self.b[j]
 
     def SimulateCZ(self, j, k):
+        # O(r^2)
         assert j != k
         H_j = [h for h in range(self.r) if self.A[j, h] == 1]
         H_k = [h for h in range(self.r) if self.A[k, h] == 1]
@@ -232,6 +249,7 @@ class QFE:
         self.R1[H_k] ^= self.b[j]
 
     def SimulateCX(self, h, j):
+        # O(nr)
         assert h != j
         self.A[j, : self.r] ^= self.A[h, : self.r]
         self.b[j] ^= self.b[h]
@@ -240,6 +258,7 @@ class QFE:
             self.ReselectPrincipalRow(None, c)
 
     def SimulateMeasZ(self, j, coin=None):
+        # O(nr)
         if all(self.A[j, : self.r] == 0):
             return self.b[j]
         else:
@@ -257,6 +276,7 @@ class QFE:
             return beta
 
     def SimulateMeasX(self, j, coin=None):
+        # O(nr)
         c = self.principate(j)
         if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
@@ -276,6 +296,7 @@ class QFE:
         return beta
 
     def SimulateMeasY(self, j, coin=None):
+        # O(nr)
         c = self.principate(j)
         if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
             beta = self.toss_coin(coin)
