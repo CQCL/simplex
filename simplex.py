@@ -233,9 +233,7 @@ class QFE:
 
     def SimulateCX(self, h, j):
         assert h != j
-        for k in range(self.r):
-            if self.A[h, k] == 1:
-                self.A[j, k] ^= 1
+        self.A[j, : self.r] ^= self.A[h, : self.r]
         self.b[j] ^= self.b[h]
         c = self.p.inverse.get(j)
         if c is not None:
