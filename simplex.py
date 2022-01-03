@@ -154,11 +154,9 @@ class QFE:
         assert z in [0, 1]
         r = self.r
         assert r > 0
-        a = self.A[:, r - 1]
+        self.b ^= z * self.A[:, r - 1]
         self.decrement_r()
-        for i in range(self.r):
-            self.R1[i] ^= z * self.Q[i, self.r]
-        self.b ^= z * a
+        self.R1[: self.r] ^= z * self.Q[: self.r, self.r]
 
     def ZeroColumnElim(self, c):
         """Reduces r by 1 or 2."""
@@ -171,12 +169,9 @@ class QFE:
         u0, u1 = self.R0[r - 1], self.R1[r - 1]
         self.decrement_r()
         if u0 == 1:
-            for h1 in H:
-                for h2 in H:
-                    self.Q[h1, h2] ^= 1
-            for h in H:
-                self.R0[h] ^= 1
-                self.R1[h] ^= self.R0[h] ^ u1
+            self.Q[np.ix_(H, H)] ^= 1
+            self.R0[H] ^= 1
+            self.R1[H] ^= self.R0[H] ^ u1
         else:
             if len(H) == 0:
                 return
@@ -191,8 +186,7 @@ class QFE:
         self.b[j] ^= 1
 
     def SimulateZ(self, j):
-        for i in range(self.r):
-            self.R1[i] ^= self.A[j, i]
+        self.R1[: self.r] ^= self.A[j, : self.r]
 
     def SimulateY(self, j):
         self.SimulateZ(j)
@@ -215,36 +209,25 @@ class QFE:
 
     def SimulateS(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        for h1 in H:
-            for h2 in H:
-                self.Q[h1, h2] ^= 1
-        for h in H:
-            self.R1[h] ^= self.R0[h] ^ self.b[j]
-            self.R0[h] ^= 1
+        self.Q[np.ix_(H, H)] ^= 1
+        self.R1[H] ^= self.R0[H] ^ self.b[j]
+        self.R0[H] ^= 1
 
     def SimulateSdg(self, j):
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        for h1 in H:
-            for h2 in H:
-                self.Q[h1, h2] ^= 1
-        for h in H:
-            self.R0[h] ^= 1
-            self.R1[h] ^= self.R0[h] ^ self.b[j]
+        self.Q[np.ix_(H, H)] ^= 1
+        self.R0[H] ^= 1
+        self.R1[H] ^= self.R0[H] ^ self.b[j]
 
     def SimulateCZ(self, j, k):
         assert j != k
-        H_j = set(h for h in range(self.r) if self.A[j, h] == 1)
-        H_k = set(h for h in range(self.r) if self.A[k, h] == 1)
-        for h1 in H_j:
-            for h2 in H_k:
-                self.Q[h1, h2] ^= 1
-                self.Q[h2, h1] ^= 1
-        for h in H_j & H_k:
-            self.R1[h] ^= 1
-        for h in H_j:
-            self.R1[h] ^= self.b[k]
-        for h in H_k:
-            self.R1[h] ^= self.b[j]
+        H_j = [h for h in range(self.r) if self.A[j, h] == 1]
+        H_k = [h for h in range(self.r) if self.A[k, h] == 1]
+        self.Q[np.ix_(H_j, H_k)] ^= 1
+        self.Q[np.ix_(H_k, H_j)] ^= 1
+        self.R1[: self.r] ^= self.A[j, : self.r] * self.A[k, : self.r]
+        self.R1[H_j] ^= self.b[k]
+        self.R1[H_k] ^= self.b[j]
 
     def SimulateCX(self, h, j):
         assert h != j
@@ -287,8 +270,7 @@ class QFE:
                 return beta
         self.Q[self.r, : self.r] = 0
         self.Q[: self.r, self.r] = 0
-        for h in range(self.r):
-            self.R1[h] ^= beta * self.A[j, h]
+        self.R1[: self.r] ^= beta * self.A[j, : self.r]
         self.R1[self.r] = beta
         self.A[j, : self.r] = 0
         self.A[:, self.r] = 0
@@ -315,12 +297,9 @@ class QFE:
         H = [h for h in range(self.r) if self.A[j, h] == 1]
         self.Q[self.r, : self.r] = 0
         self.Q[: self.r, self.r] = 0
-        for h1 in H:
-            for h2 in H:
-                self.Q[h1, h2] ^= 1
-        for h in H:
-            self.R0[h] ^= 1
-            self.R1[h] ^= self.R0[h] ^ self.b[j] ^ beta
+        self.Q[np.ix_(H, H)] ^= 1
+        self.R0[H] ^= 1
+        self.R1[H] ^= self.R0[H] ^ self.b[j] ^ beta
         self.R0[self.r] = 1
         self.R1[self.r] = beta
         self.A[j, : self.r] = 0
