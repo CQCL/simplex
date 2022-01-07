@@ -1,0 +1,471 @@
+#include <simplex.hpp>
+#include <iostream>
+#include <vector>
+
+#define CHECK(a) \
+  do { \
+    if (!(a)) { \
+      std::cout << "Assertion '" << #a << "' (line " << __LINE__ << ") failed!" << std::endl; \
+      return 1; \
+    } \
+  } while (0)
+
+#define CHECK_OK(a) CHECK(!(a))
+
+static int test_X() {
+  Simplex S(2);
+  S.X(0);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == 1);
+  CHECK(b1 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_Y() {
+  Simplex S(2);
+  S.Y(0);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == 1);
+  CHECK(b1 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_Z() {
+  Simplex S(2);
+  S.Z(0);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == 0);
+  CHECK(b1 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_H() {
+  Simplex S(2);
+  S.H(1);
+  int b0 = S.MeasZ(0);
+  CHECK(b0 == 0);
+  CHECK(S.is_deterministic());
+  int b1 = S.MeasZ(1);
+  CHECK(!S.is_deterministic());
+  return 0;
+}
+
+static int test_S() {
+  Simplex S(1);
+  S.S(0);
+  int b0 = S.MeasZ(0);
+  CHECK(b0 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_Sdg() {
+  Simplex S(1);
+  S.Sdg(0);
+  int b0 = S.MeasZ(0);
+  CHECK(b0 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_CX() {
+  Simplex S(2);
+  S.X(0);
+  S.CX(0, 1);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == 1);
+  CHECK(b1 == 1);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_CZ() {
+  Simplex S(2);
+  S.X(0);
+  S.CZ(0, 1);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == 1);
+  CHECK(b1 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_MeasX() {
+  Simplex S(1);
+  S.H(0);
+  int b0 = S.MeasX(0);
+  CHECK(b0 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_MeasY() {
+  Simplex S(1);
+  S.H(0);
+  S.S(0);
+  int b0 = S.MeasY(0);
+  CHECK(b0 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_MeasZ() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  CHECK(b0 == b1);
+  CHECK(!S.is_deterministic());
+  return 0;
+}
+
+static int test_many_qubits() {
+  Simplex S(30);
+  S.H(0);
+  for (unsigned i = 1; i < 30; i++) {
+    S.CX(0, i);
+  }
+  int b0 = S.MeasZ(0);
+  for (unsigned i = 1; i < 30; i++) {
+    int b = S.MeasZ(i);
+    CHECK(b == b0);
+  }
+  CHECK(!S.is_deterministic());
+  return 0;
+}
+
+static int test_complicated_circuit_1() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.CX(0,1);
+  S.CZ(1,2);
+  S.S(1);
+  S.Y(2);
+  S.CX(2,0);
+  S.Z(1);
+  S.MeasX(1);
+  S.MeasZ(0);
+  S.MeasY(2);
+  S.S(0);
+  S.S(1);
+  S.S(2);
+  S.CX(1,2);
+  S.CX(0,1);
+  S.H(0);
+  S.X(1);
+  S.Z(1);
+  S.S(0);
+  S.CX(0,2);
+  S.CZ(1,0);
+  S.MeasZ(0);
+  S.MeasZ(1);
+  S.MeasY(1);
+  S.MeasZ(2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.CX(0,1);
+  S.CZ(1,2);
+  S.S(1);
+  S.Y(2);
+  S.CX(2,0);
+  S.Z(1);
+  S.MeasX(1);
+  return 0;
+}
+
+static int test_complicated_circuit_2() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.CX(0,1);
+  S.CZ(1,2);
+  S.S(1);
+  S.Y(2);
+  S.CX(2,0);
+  S.Z(1);
+  S.S(0);
+  S.S(1);
+  S.S(2);
+  S.CX(1,2);
+  S.CX(0,1);
+  S.H(0);
+  return 0;
+}
+
+static int test_complicated_x_cx_circuit() {
+  Simplex S(4);
+  S.X(0);
+  S.X(2);
+  S.CX(0,3);
+  S.CX(3,1);
+  S.X(1);
+  S.CX(0,1);
+  S.X(3);
+  S.CX(3,2);
+  S.X(2);
+  S.CX(1,2);
+  S.X(1);
+  S.CX(1,2);
+  S.CX(1,3);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  int b2 = S.MeasZ(2);
+  int b3 = S.MeasZ(3);
+  CHECK(b0 == 1);
+  CHECK(b1 == 0);
+  CHECK(b2 == 1);
+  CHECK(b3 == 0);
+  CHECK(S.is_deterministic());
+  return 0;
+}
+
+static int test_invert() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0,1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1,2);
+  S.H(2);
+  S.CX(2,1);
+  S.Z(0);
+  S.X(1);
+  S.CZ(0,1);
+  S.CZ(0,1);
+  S.X(1);
+  S.Z(0);
+  S.CX(2,1);
+  S.H(2);
+  S.CZ(1,2);
+  S.Y(2);
+  S.Sdg(1);
+  S.CX(0,1);
+  S.H(0);
+  int b0 = S.MeasZ(0);
+  int b1 = S.MeasZ(1);
+  int b2 = S.MeasZ(2);
+  CHECK(b0 == 0);
+  CHECK(b1 == 0);
+  CHECK(b2 == 0);
+  return 0;
+}
+
+static int test_measurements() {
+  // Succeeding measurement in the same basis yields the same result.
+  const  std::vector<std::pair<int, int>> twocoins = {
+    {0,0}, {0,1}, {1,0}, {1,1}};
+  // X,X
+  for (auto coins : twocoins) {
+    Simplex S(1);
+    int b0 = S.MeasX(0, coins.first);
+    int b1 = S.MeasX(0, coins.second);
+    CHECK(b0 == b1);
+  }
+  // Y,Y
+  for (auto coins : twocoins) {
+    Simplex S(1);
+    int b0 = S.MeasY(0, coins.first);
+    int b1 = S.MeasY(0, coins.second);
+    CHECK(b0 == b1);
+  }
+  // Z,Z
+  for (auto coins : twocoins) {
+    Simplex S(1);
+    S.H(0);
+    int b0 = S.MeasX(0, coins.first);
+    int b1 = S.MeasX(0, coins.second);
+    CHECK(b0 == b1);
+  }
+  // Succeeding orthogonal measurement yields 0 or 1 with equal probability.
+  // X,Y
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.MeasX(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasY(0, 0);
+    int b1 = T.MeasY(0, 1);
+    CHECK(b0 != b1);
+  }
+  // X,Z
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.MeasX(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasZ(0, 0);
+    int b1 = T.MeasZ(0, 1);
+    CHECK(b0 != b1);
+  }
+  // Y,Z
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.MeasY(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasZ(0, 0);
+    int b1 = T.MeasZ(0, 1);
+    CHECK(b0 != b1);
+  }
+  // Y,X
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.MeasY(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasX(0, 0);
+    int b1 = T.MeasX(0, 1);
+    CHECK(b0 != b1);
+  }
+  // Z,X
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.H(0);
+    S.MeasZ(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasX(0, 0);
+    int b1 = T.MeasX(0, 1);
+    CHECK(b0 != b1);
+  }
+  // Z,Y
+  for (int coin = 0; coin < 2; coin++) {
+    Simplex S(1);
+    S.H(0);
+    S.MeasZ(0, coin);
+    Simplex T(S);
+    int b0 = S.MeasY(0, 0);
+    int b1 = T.MeasY(0, 1);
+    CHECK(b0 != b1);
+  }
+  return 0;
+}
+
+static int test_mid_circ_meas() {
+  { // [X; MZ; X; MZ] should yield 1 then 0
+    Simplex S(1);
+    S.X(0);
+    CHECK(S.MeasZ(0) == 1);
+    S.X(0);
+    CHECK(S.MeasZ(0) == 0);
+  }
+  { // Replace first MZ with [H; MX; H]
+    Simplex S(1);
+    S.X(0);
+    S.H(0);
+    CHECK(S.MeasX(0) == 1);
+    S.H(0);
+    S.X(0);
+    CHECK(S.MeasZ(0) == 0);
+  }
+  { // Replace first MZ with [H; S; MY; S*; H]
+    Simplex S(1);
+    S.X(0);
+    S.H(0);
+    S.S(0);
+    CHECK(S.MeasY(0) == 1);
+    S.Sdg(0);
+    S.H(0);
+    S.X(0);
+    CHECK(S.MeasZ(0) == 0);
+  }
+  { // A more complicated circuit that ends in the (1,1) state
+    Simplex S(2);
+    S.X(0);
+    S.CX(0, 1);
+    S.S(1);
+    S.CX(1, 0);
+    S.CZ(0, 1);
+    S.CX(1, 0);
+    S.S(1);
+    S.Z(0);
+    {
+      Simplex T(S);
+      CHECK(T.MeasZ(0) == 1);
+      CHECK(T.MeasZ(1) == 1);
+      T.Z(0);
+      T.Sdg(1);
+      T.CX(1, 0);
+      T.CZ(0, 1);
+      T.CX(1, 0);
+      T.Sdg(1);
+      T.CX(0, 1);
+      T.X(0);
+      CHECK(T.MeasZ(0) == 0);
+      CHECK(T.MeasZ(1) == 0);
+    }
+    { // Replace each first MZ with [H; MX; H]
+      Simplex T(S);
+      T.H(0);
+      T.H(1);
+      CHECK(T.MeasX(0) == 1);
+      CHECK(T.MeasX(1) == 1);
+      T.H(0);
+      T.H(1);
+      T.Z(0);
+      T.Sdg(1);
+      T.CX(1, 0);
+      T.CZ(0, 1);
+      T.CX(1, 0);
+      T.Sdg(1);
+      T.CX(0, 1);
+      T.X(0);
+      CHECK(T.MeasZ(0) == 0);
+      CHECK(T.MeasZ(1) == 0);
+    }
+    { // Replace each first MZ with [H; S; MY; S*; H]
+      Simplex T(S);
+      T.H(0);
+      T.S(0);
+      T.H(1);
+      T.S(1);
+      CHECK(T.MeasY(0) == 1);
+      CHECK(T.MeasY(1) == 1);
+      T.Sdg(0);
+      T.H(0);
+      T.Sdg(1);
+      T.H(1);
+      T.Z(0);
+      T.Sdg(1);
+      T.CX(1, 0);
+      T.CZ(0, 1);
+      T.CX(1, 0);
+      T.Sdg(1);
+      T.CX(0, 1);
+      T.X(0);
+      CHECK(T.MeasZ(0) == 0);
+      CHECK(T.MeasZ(1) == 0);
+    }
+  }
+  return 0;
+}
+
+int main() {
+  CHECK_OK(test_X());
+  CHECK_OK(test_Y());
+  CHECK_OK(test_Z());
+  CHECK_OK(test_H());
+  CHECK_OK(test_S());
+  CHECK_OK(test_Sdg());
+  CHECK_OK(test_CX());
+  CHECK_OK(test_CZ());
+  CHECK_OK(test_MeasX());
+  CHECK_OK(test_MeasY());
+  CHECK_OK(test_MeasZ());
+  CHECK_OK(test_many_qubits());
+  CHECK_OK(test_complicated_circuit_1());
+  CHECK_OK(test_complicated_circuit_2());
+  CHECK_OK(test_complicated_x_cx_circuit());
+  CHECK_OK(test_invert());
+  CHECK_OK(test_measurements());
+  CHECK_OK(test_mid_circ_meas());
+  return 0;
+}
