@@ -248,12 +248,12 @@ class QFE:
         self.R1[H_j] ^= self.b[k]
         self.R1[H_k] ^= self.b[j]
 
-    def SimulateCX(self, h, j):
+    def SimulateCX(self, j, k):
         # O(nr)
-        assert h != j
-        self.A[j, : self.r] ^= self.A[h, : self.r]
-        self.b[j] ^= self.b[h]
-        c = self.p.inverse.get(j)
+        assert j != k
+        self.A[k, : self.r] ^= self.A[j, : self.r]
+        self.b[k] ^= self.b[j]
+        c = self.p.inverse.get(k)
         if c is not None:
             self.ReselectPrincipalRow(None, c)
 
