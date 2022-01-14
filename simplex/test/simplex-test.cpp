@@ -448,6 +448,1250 @@ static int test_mid_circ_meas() {
   return 0;
 }
 
+static int test_dist_0_0() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  return 0;
+}
+static int test_dist_0_1() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  return 0;
+}
+static int test_dist_0_2() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  return 0;
+}
+static int test_dist_0_3() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_0_4() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_0_5() {
+  Simplex S(2);
+  S.H(0);
+  S.CX(0, 1);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_1_0() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 2);
+  CHECK(v[6] == 2);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_1_1() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_1_2() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 4);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 4);
+  return 0;
+}
+static int test_dist_1_3() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_1_4() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_1_5() {
+  Simplex S(3);
+  S.H(0);
+  S.CX(0, 1);
+  S.CX(0, 2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_2_0() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_2_1() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_2_2() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_2_3() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_2_4() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 2);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_2_5() {
+  Simplex S(3);
+  S.H(1);
+  S.CX(1, 2);
+  S.CZ(2, 0);
+  S.S(0);
+  S.CX(0, 2);
+  S.H(1);
+  S.Sdg(1);
+  S.S(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_3_0() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 8);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_3_1() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_3_2() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_3_3() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 2);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_3_4() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 2);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_3_5() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 2);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_4_0() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  return 0;
+}
+static int test_dist_4_1() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  return 0;
+}
+static int test_dist_4_2() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  return 0;
+}
+static int test_dist_4_3() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_4_4() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_4_5() {
+  Simplex S(2);
+  S.H(1);
+  S.X(0);
+  S.CX(1, 0);
+  std::vector<unsigned> v(4, 0);
+  for (unsigned m = 0; m < 4; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  return 0;
+}
+static int test_dist_5_0() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 2);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_5_1() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_5_2() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 4);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 4);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_5_3() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_5_4() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_5_5() {
+  Simplex S(3);
+  S.Y(0);
+  S.H(1);
+  S.CX(1, 2);
+  S.Sdg(2);
+  S.CZ(0, 2);
+  S.Z(0);
+  S.S(1);
+  S.CX(1, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_6_0() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_6_1() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_6_2() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 2);
+  CHECK(v[3] == 0);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 2);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_6_3() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_6_4() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_6_5() {
+  Simplex S(3);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  S.Sdg(1);
+  S.CZ(0, 1);
+  S.S(1);
+  S.CZ(1, 2);
+  S.H(0);
+  S.H(1);
+  S.H(2);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  CHECK(v[4] == 2);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 2);
+  return 0;
+}
+static int test_dist_7_0() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 0);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 4);
+  CHECK(v[4] == 4);
+  CHECK(v[5] == 0);
+  CHECK(v[6] == 0);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_7_1() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_7_2() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 2);
+  CHECK(v[1] == 0);
+  CHECK(v[2] == 0);
+  CHECK(v[3] == 2);
+  CHECK(v[4] == 0);
+  CHECK(v[5] == 2);
+  CHECK(v[6] == 2);
+  CHECK(v[7] == 0);
+  return 0;
+}
+static int test_dist_7_3() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasX(0, (m >> 0) & 1) << 0;
+    c += T.MeasY(1, (m >> 1) & 1) << 1;
+    c += T.MeasZ(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_7_4() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasY(0, (m >> 0) & 1) << 0;
+    c += T.MeasZ(1, (m >> 1) & 1) << 1;
+    c += T.MeasX(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+static int test_dist_7_5() {
+  Simplex S(3);
+  S.X(0);
+  S.H(0);
+  S.CX(0, 1);
+  S.S(1);
+  S.Y(2);
+  S.CZ(1, 2);
+  S.H(2);
+  S.Sdg(0);
+  S.Z(2);
+  S.Y(2);
+  S.CX(2, 0);
+  std::vector<unsigned> v(8, 0);
+  for (unsigned m = 0; m < 8; m++) {
+    Simplex T(S);
+    unsigned c = 0;
+    c += T.MeasZ(0, (m >> 0) & 1) << 0;
+    c += T.MeasX(1, (m >> 1) & 1) << 1;
+    c += T.MeasY(2, (m >> 2) & 1) << 2;
+    v[c]++;
+  }
+  CHECK(v[0] == 1);
+  CHECK(v[1] == 1);
+  CHECK(v[2] == 1);
+  CHECK(v[3] == 1);
+  CHECK(v[4] == 1);
+  CHECK(v[5] == 1);
+  CHECK(v[6] == 1);
+  CHECK(v[7] == 1);
+  return 0;
+}
+
+
 int main() {
   CHECK_OK(test_X());
   CHECK_OK(test_Y());
@@ -467,5 +1711,53 @@ int main() {
   CHECK_OK(test_invert());
   CHECK_OK(test_measurements());
   CHECK_OK(test_mid_circ_meas());
+  CHECK_OK(test_dist_0_0());
+  CHECK_OK(test_dist_0_1());
+  CHECK_OK(test_dist_0_2());
+  CHECK_OK(test_dist_0_3());
+  CHECK_OK(test_dist_0_4());
+  CHECK_OK(test_dist_0_5());
+  CHECK_OK(test_dist_1_0());
+  CHECK_OK(test_dist_1_1());
+  CHECK_OK(test_dist_1_2());
+  CHECK_OK(test_dist_1_3());
+  CHECK_OK(test_dist_1_4());
+  CHECK_OK(test_dist_1_5());
+  CHECK_OK(test_dist_2_0());
+  CHECK_OK(test_dist_2_1());
+  CHECK_OK(test_dist_2_2());
+  CHECK_OK(test_dist_2_3());
+  CHECK_OK(test_dist_2_4());
+  CHECK_OK(test_dist_2_5());
+  CHECK_OK(test_dist_3_0());
+  CHECK_OK(test_dist_3_1());
+  CHECK_OK(test_dist_3_2());
+  CHECK_OK(test_dist_3_3());
+  CHECK_OK(test_dist_3_4());
+  CHECK_OK(test_dist_3_5());
+  CHECK_OK(test_dist_4_0());
+  CHECK_OK(test_dist_4_1());
+  CHECK_OK(test_dist_4_2());
+  CHECK_OK(test_dist_4_3());
+  CHECK_OK(test_dist_4_4());
+  CHECK_OK(test_dist_4_5());
+  CHECK_OK(test_dist_5_0());
+  CHECK_OK(test_dist_5_1());
+  CHECK_OK(test_dist_5_2());
+  CHECK_OK(test_dist_5_3());
+  CHECK_OK(test_dist_5_4());
+  CHECK_OK(test_dist_5_5());
+  CHECK_OK(test_dist_6_0());
+  CHECK_OK(test_dist_6_1());
+  CHECK_OK(test_dist_6_2());
+  CHECK_OK(test_dist_6_3());
+  CHECK_OK(test_dist_6_4());
+  CHECK_OK(test_dist_6_5());
+  CHECK_OK(test_dist_7_0());
+  CHECK_OK(test_dist_7_1());
+  CHECK_OK(test_dist_7_2());
+  CHECK_OK(test_dist_7_3());
+  CHECK_OK(test_dist_7_4());
+  CHECK_OK(test_dist_7_5());
   return 0;
 }
