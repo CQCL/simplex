@@ -15,15 +15,7 @@ class A_matrix {
 public:
   A_matrix(unsigned n) : n(n), r(0), data(n, std::vector<int>(n+1, 0)) {}
 
-  // Reference to one row
-  std::vector<int>& row(unsigned j) {
-    return data[j];
-  }
-
-  // Const reference to one row
-  const std::vector<int>& constrow(unsigned j) const {
-    return data[j];
-  }
+  int entry(unsigned j, unsigned h) const { return data[j][h]; }
 
   // XOR column k into column h
   void add_col(unsigned h, unsigned k) {
@@ -40,7 +32,7 @@ public:
   }
 
   // Number of elements in row j containing 1
-  unsigned row_weight(unsigned j) {
+  unsigned row_weight(unsigned j) const {
     unsigned c = 0;
     for (unsigned h = 0; h < r; h++) {
       if (data[j][h]) c++;
@@ -49,7 +41,7 @@ public:
   }
 
   // Number of elements in column h containing 1
-  unsigned col_weight(unsigned h) {
+  unsigned col_weight(unsigned h) const {
     unsigned c = 0;
     for (unsigned j = 0; j < n; j++) {
       if (data[j][h]) c++;
@@ -57,33 +49,31 @@ public:
     return c;
   }
 
-  // Swap (distinct) columns
-  void swap_cols(unsigned h1, unsigned h2) {
+  // Swap column h with column r-1
+  void swap_col(unsigned h) {
+    const unsigned r1 = r - 1;
     for (unsigned j = 0; j < n; j++) {
-      std::vector<int>& A_j = row(j);
-      std::iter_swap(A_j.begin() + h1, A_j.begin() + h2);
+      std::vector<int>& A_j = data[j];
+      std::iter_swap(A_j.begin() + h, A_j.begin() + r1);
     }
   }
 
-  // Set a row to zero
-  void zero_row(unsigned j) {
-    std::vector<int>& A_j = row(j);
+  // Zero row j and append new column e_j
+  void zero_append_basis_col(unsigned j) {
+    std::vector<int>& A_j = data[j];
     for (unsigned h = 0; h < r; h++) {
       A_j[h] = 0;
     }
-  }
-
-  // Write e_j to column r
-  void append_basis_col(unsigned j) {
     for (unsigned k = 0; k < n; k++) {
       data[k][r] = 0;
     }
-    data[j][r] = 1;
+    A_j[r] = 1;
+    r++;
   }
 
   // List of column indices h s.t. A[j,h] = 1
   std::list<unsigned> cols_where_one(unsigned j) const {
-    const std::vector<int>& A_j = constrow(j);
+    const std::vector<int>& A_j = data[j];
     std::list<unsigned> H;
     for (unsigned h = 0; h < r; h++) {
       if (A_j[h]) {
@@ -93,8 +83,20 @@ public:
     return H;
   }
 
-  void increment_r() { r++; }
-  void decrement_r() { r--; }
+  // List of column indices h s.t. A[j,h] = A[j,k] = 1
+  std::list<unsigned> cols_where_one(unsigned j, unsigned k) const {
+    const std::vector<int>& A_j = data[j];
+    const std::vector<int>& A_k = data[k];
+    std::list<unsigned> H;
+    for (unsigned h = 0; h < r; h++) {
+      if (A_j[h] & A_k[h]) {
+        H.push_back(h);
+      }
+    }
+    return H;
+  }
+
+  void drop_final_col() { r--; }
 
   friend std::ostream& operator<<(std::ostream& os, const A_matrix& A);
 
@@ -119,7 +121,7 @@ class Q_matrix {
 public:
   Q_matrix(unsigned n) : n(n), r(0), data(n+1, std::vector<int>(n+1, 0)) {}
 
-  int entry(unsigned h1, unsigned h2) { return data[h1][h2]; }
+  int entry(unsigned h1, unsigned h2) const { return data[h1][h2]; }
 
   // XOR row/column k into row/column h
   void add_rowcol(unsigned h, unsigned k) {
@@ -131,17 +133,18 @@ public:
     }
   }
 
-  // Swap (distinct) rows and columns
-  void swap_rowcol(unsigned h1, unsigned h2) {
+  // Swap row/column with row/column r-1
+  void swap_rowcol(unsigned h) {
+    const unsigned r1 = r - 1;
     for (unsigned j = 0; j < r; j++) {
-      int t = data[j][h1];
-      data[j][h1] = data[j][h2];
-      data[j][h2] = t;
+      int t = data[j][h];
+      data[j][h] = data[j][r1];
+      data[j][r1] = t;
     }
     for (unsigned j = 0; j < r; j++) {
-      int t = data[h1][j];
-      data[h1][j] = data[h2][j];
-      data[h2][j] = t;
+      int t = data[h][j];
+      data[h][j] = data[r1][j];
+      data[r1][j] = t;
     }
   }
 
@@ -157,8 +160,8 @@ public:
 
   // Flip the (h1, h2) entry for all h1, h2 in H
   void flip_submatrix(const std::list<unsigned>& H) {
-    for (auto h1 : H) {
-      for (auto h2 : H) {
+    for (unsigned h1 : H) {
+      for (unsigned h2 : H) {
         data[h1][h2] ^= 1;
       }
     }
@@ -168,23 +171,27 @@ public:
   void flip_submatrix(
     const std::list<unsigned>& H1, const std::list<unsigned>& H2)
   {
-    for (auto h1 : H1) {
-      for (auto h2 : H2) {
+    for (unsigned h1 : H1) {
+      for (unsigned h2 : H2) {
         data[h1][h2] ^= 1;
         data[h2][h1] ^= 1;
       }
     }
   }
 
-  // Append the given row/column, without incrementing r
-  void append_rowcol(const std::vector<int>& a) {
+  // Append new row/column (given as list of indices where 1)
+  void append_rowcol(const std::list<unsigned>& H) {
     for (unsigned h = 0; h < r; h++) {
-      data[h][r] = data[r][h] = a[h];
+      data[h][r] = data[r][h] = 0;
     }
+    for (unsigned h : H) {
+      data[h][r] = data[r][h] = 1;
+    }
+    r++;
   }
 
   // Whether a given row/column is all-zero
-  bool rowcol_is_zero(unsigned h) {
+  bool rowcol_is_zero(unsigned h) const {
     for (unsigned j = 0; j < r; j++) {
       if (j != h && data[h][j]) {
         return false;
@@ -193,15 +200,7 @@ public:
     return true;
   }
 
-  // Append a zero row/column, without incrementing r
-  void append_zero_rowcol() {
-    for (unsigned h = 0; h < r; h++) {
-      data[h][r] = data[r][h] = 0;
-    }
-  }
-
-  void increment_r() { r++; }
-  void decrement_r() { r--; }
+  void drop_final_rowcol() { r--; }
 
   friend std::ostream& operator<<(std::ostream& os, const Q_matrix& Q);
 
@@ -258,10 +257,11 @@ struct Simplex::impl {
   }
 
   void MakePrincipal(unsigned c, unsigned j) {
-    std::vector<int>& A_j = A.row(j);
-    if (A_j[c]) {
-      for (unsigned k = 0; k < r; k++) {
-        if ((k != c) && A_j[k]) {
+    if (A.entry(j, c)) {
+      const std::list<unsigned> H = A.cols_where_one(j);
+      for (unsigned k : H) {
+        if (k != c) {
+          // This modifies A[j][k] but no other entries in A_j:
           ReindexSubtColumn(k, c);
         }
       }
@@ -276,8 +276,7 @@ struct Simplex::impl {
     unsigned j0;
     for (unsigned j1 = 0; j1 < n; j1++) {
       if (!j || j1 != *j) {
-        std::vector<int>& A_j1 = A.row(j1);
-        if (A_j1[c]) {
+        if (A.entry(j1, c)) {
           unsigned n1 = A.row_weight(j1);
           if (!n0 || n1 < *n0) {
             j0 = j1;
@@ -302,71 +301,79 @@ struct Simplex::impl {
     return c;
   }
 
-  void ReindexSwapColumns(unsigned k, unsigned c) {
-    if (k == c) return;
-    A.swap_cols(k, c);
-    std::iter_swap(R0.begin() + k, R0.begin() + c);
-    std::iter_swap(R1.begin() + k, R1.begin() + c);
-    Q.swap_rowcol(k, c);
-    p.swap_fwd(k, c);
+  // Swap column k with column r-1
+  void ReindexSwapColumn(unsigned k) {
+    const unsigned r1 = r - 1;
+    if (k == r1) return;
+    A.swap_col(k);
+    std::iter_swap(R0.begin() + k, R0.begin() + r1);
+    std::iter_swap(R1.begin() + k, R1.begin() + r1);
+    Q.swap_rowcol(k);
+    p.swap_fwd(k, r1);
   }
 
-  void increment_r() {
-    A.increment_r();
-    Q.increment_r();
+  void expand(unsigned j, const std::list<unsigned>& H) {
+    A.zero_append_basis_col(j);
+    Q.append_rowcol(H);
     r++;
   }
 
-  void decrement_r() {
+  void contract() {
+    A.drop_final_col();
+    Q.drop_final_rowcol();
     p.fwd_erase(r - 1);
-    A.decrement_r();
-    Q.decrement_r();
     r--;
   }
 
   void FixFinalBit(int z) {
-    for (unsigned j = 0; j < n; j++) {
-      b[j] ^= z & A.row(j)[r -1];
+    if (z) {
+      const unsigned r1 = r - 1;
+      for (unsigned j = 0; j < n; j++) {
+        b[j] ^= A.entry(j, r1);
+      }
+      for (unsigned h = 0; h < r1; h++) {
+        R1[h] ^= Q.entry(h, r1);
+      }
     }
-    decrement_r();
-    for (unsigned h = 0; h < r; h++) {
-      R1[h] ^= z & Q.entry(h, r);
-    }
-  }
-
-  void new_principal_column(
-    unsigned j, std::optional<unsigned> c = std::nullopt)
-  {
-    A.zero_row(j);
-    A.append_basis_col(j);
-    p.make_match(r, j);
-    b[j] = 0;
-    increment_r();
-    if (c) {
-      ZeroColumnElim(*c);
-    }
+    contract();
   }
 
   void ZeroColumnElim(unsigned c) {
-    ReindexSwapColumns(c, r - 1);
+    ReindexSwapColumn(c);
     std::list<unsigned> H = Q.rows_with_terminal_1();
     int u0 = R0[r - 1];
     int u1 = R1[r - 1];
-    decrement_r();
+    contract();
     if (u0) {
       Q.flip_submatrix(H);
-      for (auto h : H) {
+      for (unsigned h : H) {
         R0[h] ^= 1;
         R1[h] ^= R0[h] ^ u1;
       }
     } else if (!H.empty()) {
       unsigned l = H.front();
       H.pop_front();
-      for (auto h : H) {
+      for (unsigned h : H) {
         ReindexSubtColumn(h, l);
       }
-      ReindexSwapColumns(r - 1, l);
+      ReindexSwapColumn(l);
       FixFinalBit(u1);
+    }
+  }
+
+  void new_principal_column(
+    unsigned j,
+    int r0, int r1,
+    std::optional<unsigned> c = std::nullopt,
+    const std::list<unsigned>& H = std::list<unsigned>())
+  {
+    expand(j, H);
+    b[j] = 0;
+    R0[r - 1] = r0;
+    R1[r - 1] = r1;
+    p.make_match(r - 1, j);
+    if (c) {
+      ZeroColumnElim(*c);
     }
   }
 
@@ -375,26 +382,23 @@ struct Simplex::impl {
   void SimulateY(unsigned j) { SimulateZ(j); SimulateX(j); }
 
   void SimulateZ(unsigned j) {
-    const std::vector<int>& A_j = A.row(j);
-    for (unsigned h = 0; h < r; h++) {
-      R1[h] ^= A_j[h];
+    const std::list<unsigned> H = A.cols_where_one(j);
+    for (unsigned h : H) {
+      R1[h] ^= 1;
     }
   }
 
   void SimulateH(unsigned j) {
     std::optional<unsigned> c = principate(j);
-    std::vector<int>& A_j = A.row(j);
-    Q.append_rowcol(A_j);
-    R0[r] = 0;
-    R1[r] = b[j];
-    new_principal_column(j, c);
+    const std::list<unsigned> H = A.cols_where_one(j);
+    new_principal_column(j, 0, b[j], c, H);
   }
 
   void SimulateS(unsigned j) {
     const std::list<unsigned> H = A.cols_where_one(j);
     Q.flip_submatrix(H);
     int z = b[j];
-    for (auto h : H) {
+    for (unsigned h : H) {
       R1[h] ^= R0[h] ^ z;
       R0[h] ^= 1;
     }
@@ -404,7 +408,7 @@ struct Simplex::impl {
     const std::list<unsigned> H = A.cols_where_one(j);
     Q.flip_submatrix(H);
     const int z = b[j];
-    for (auto h : H) {
+    for (unsigned h : H) {
       R0[h] ^= 1;
       R1[h] ^= R0[h] ^ z;
     }
@@ -422,17 +426,16 @@ struct Simplex::impl {
     const std::list<unsigned> H_j = A.cols_where_one(j);
     const std::list<unsigned> H_k = A.cols_where_one(k);
     Q.flip_submatrix(H_j, H_k);
-    const std::vector<int>& A_j = A.constrow(j);
-    const std::vector<int>& A_k = A.constrow(k);
-    for (unsigned h = 0; h < r; h++) {
-      R1[h] ^= A_j[h] & A_k[h];
+    const std::list<unsigned> H_jk = A.cols_where_one(j, k);
+    for (unsigned h : H_jk) {
+      R1[h] ^= 1;
     }
     const int z_j = b[j];
     const int z_k = b[k];
-    for (auto h : H_j) {
+    for (unsigned h : H_j) {
       R1[h] ^= z_k;
     }
-    for (auto h : H_k) {
+    for (unsigned h : H_k) {
       R1[h] ^= z_j;
     }
   }
@@ -461,13 +464,11 @@ struct Simplex::impl {
     } else {
       beta = toss_coin(coin);
     }
-    Q.append_zero_rowcol();
-    const std::vector<int>& A_j = A.row(j);
-    for (unsigned h = 0; h < r; h++) {
-      R1[h] ^= beta & A_j[h];
+    const std::list<unsigned> H = A.cols_where_one(j);
+    for (unsigned h : H) {
+      R1[h] ^= beta;
     }
-    R1[r] = beta;
-    new_principal_column(j, c);
+    new_principal_column(j, 0, beta, c);
     return beta;
   }
 
@@ -489,14 +490,11 @@ struct Simplex::impl {
     const std::list<unsigned> H = A.cols_where_one(j);
     Q.flip_submatrix(H);
     const int z = b[j] ^ beta;
-    for (auto h : H) {
+    for (unsigned h : H) {
       R0[h] ^= 1;
       R1[h] ^= R0[h] ^ z;
     }
-    Q.append_zero_rowcol();
-    R0[r] = 1;
-    R1[r] = beta;
-    new_principal_column(j, c);
+    new_principal_column(j, 1, beta, c);
     return beta;
   }
 
@@ -508,14 +506,14 @@ struct Simplex::impl {
       const std::list<unsigned> H = A.cols_where_one(j);
       unsigned k;
       unsigned m = n + 1;
-      for (auto h : H) {
+      for (unsigned h : H) {
         unsigned c = A.col_weight(h);
         if (c < m) {
           k = h;
           m = c;
         }
       }
-      ReindexSwapColumns(k, r - 1);
+      ReindexSwapColumn(k);
       MakePrincipal(r - 1, j);
       FixFinalBit(beta ^ b[j]);
       return beta;
