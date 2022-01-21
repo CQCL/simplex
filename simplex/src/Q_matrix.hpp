@@ -2,12 +2,18 @@
 
 #include <iostream>
 #include <list>
-#include <vector>
+#include <memory>
 
 // A symmetric 0,1 off-diagonal matrix
 class Q_matrix {
 public:
   Q_matrix(unsigned n);
+
+  ~Q_matrix();
+  Q_matrix(const Q_matrix& other);
+  Q_matrix(Q_matrix&& other);
+  Q_matrix& operator=(const Q_matrix& other);
+  Q_matrix& operator=(Q_matrix&& other);
 
   int entry(unsigned h1, unsigned h2) const;
 
@@ -38,7 +44,6 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const Q_matrix& Q);
 
 private:
-  unsigned n;
-  unsigned r;
-  std::vector<std::vector<int>> data;
+  struct impl;
+  std::unique_ptr<impl> pImpl;
 };

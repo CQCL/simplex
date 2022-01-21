@@ -2,11 +2,17 @@
 
 #include <iostream>
 #include <list>
-#include <vector>
+#include <memory>
 
 class A_matrix {
 public:
   A_matrix(unsigned n);
+
+  ~A_matrix();
+  A_matrix(const A_matrix& other);
+  A_matrix(A_matrix&& other);
+  A_matrix& operator=(const A_matrix& other);
+  A_matrix& operator=(A_matrix&& other);
 
   int entry(unsigned j, unsigned h) const;
 
@@ -39,7 +45,6 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const A_matrix& A);
 
 private:
-  unsigned n;
-  unsigned r;
-  std::vector<std::vector<int>> data;
+  struct impl;
+  std::unique_ptr<impl> pImpl;
 };
