@@ -1,8 +1,12 @@
 #include "Q_matrix.hpp"
+#include <algorithm>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <set>
 #include <vector>
+
+#if defined (SIMPLEX_DENSE)
 
 struct Q_matrix::impl {
   impl(unsigned n) : n(n), r(0), data(n+1, std::vector<int>(n+1, 0)) {}
@@ -92,6 +96,139 @@ struct Q_matrix::impl {
   void drop_final_rowcol() { r--; }
 };
 
+#else
+
+struct Q_matrix::impl {
+  impl(unsigned n) : n(n), r(0), rows(n+1) {}
+
+  /* Data */
+
+  unsigned n;
+  unsigned r;
+  std::vector<std::set<unsigned>> rows;
+  std::vector<std::set<unsigned>> cols;
+
+  /* Methods */
+
+  int entry(unsigned h1, unsigned h2) const { return rows[h1].contains(h2); }
+
+  void add_rowcol(unsigned h, unsigned k) {
+    // 1. Compute what the new row will be:
+    std::set<unsigned> newrow;
+    for (unsigned j : rows[h]) {
+      if (!rows[k].contains(j)) {
+        newrow.insert(j);
+      }
+    }
+    for (unsigned j : rows[k]) {
+      if (!rows[h].contains(j)) {
+        newrow.insert(j);
+      }
+    }
+    // 2. Fix up the other rows for symmetry:
+    for (unsigned j : rows[h]) {
+      if (!newrow.contains(j)) {
+        rows[j].erase(h);
+      }
+    }
+    for (unsigned j : newrow) {
+      rows[j].insert(h);
+    }
+    // 3. Replace the row:
+    rows[h] = newrow;
+  }
+
+  void swap_rowcol(unsigned h) {
+    std::set<unsigned> D1(rows[h]);
+    for (unsigned k : rows[r - 1]) {
+      D1.erase(k);
+    }
+    D1.erase(h); D1.erase(r - 1);
+    std::set<unsigned> D2(rows[r - 1]);
+    for (unsigned k : rows[h]) {
+      D2.erase(k);
+    }
+    D2.erase(h); D2.erase(r - 1);
+    for (unsigned k : D1) {
+      rows[h].erase(k); rows[k].erase(h);
+      rows[r - 1].insert(k); rows[k].insert(r - 1);
+    }
+    for (unsigned k : D2) {
+      rows[r - 1].erase(k); rows[k].erase(r - 1);
+      rows[h].insert(k); rows[k].insert(h);
+    }
+  }
+
+  std::list<unsigned> rows_with_terminal_1() const {
+    return std::list<unsigned>(rows[r - 1].begin(), rows[r - 1].end());
+  }
+
+  void flip_submatrix(const std::list<unsigned>& H) {
+    for (unsigned h1 : H) {
+      for (unsigned h2 : H) {
+        if (h1 < h2) {
+          if (rows[h1].contains(h2)) {
+            rows[h1].erase(h2);
+            rows[h2].erase(h1);
+          } else {
+            rows[h1].insert(h2);
+            rows[h2].insert(h1);
+          }
+        }
+      }
+    }
+  }
+
+  void flip_submatrix(
+    const std::list<unsigned>& H1, const std::list<unsigned>& H2)
+  {
+    for (unsigned h1 : H1) {
+      for (unsigned h2 : H2) {
+        if (h1 != h2) {
+          if (rows[h1].contains(h2)) {
+            rows[h1].erase(h2);
+            rows[h2].erase(h1);
+          } else {
+            rows[h1].insert(h2);
+            rows[h2].insert(h1);
+          }
+        }
+      }
+    }
+  }
+
+  void append_rowcol(const std::list<unsigned>& H) {
+    for (unsigned h : H) {
+      rows[r].insert(h);
+      rows[h].insert(r);
+    }
+    r++;
+  }
+
+  bool rowcol_is_zero(unsigned h) const {
+    unsigned sz = rows[h].size();
+    if (sz == 0) {
+      return true;
+    } else if (sz == 1) {
+      return rows[h].contains(h);
+    } else {
+      return false;
+    }
+  }
+
+  void drop_final_rowcol() {
+    for (unsigned h : rows[r - 1]) {
+      if (h != r - 1) {
+        rows[h].erase(r - 1);
+      }
+    }
+    rows[r - 1].clear();
+    r--;
+  }
+};
+
+#endif
+
 Q_matrix::Q_matrix(unsigned n) : pImpl(std::make_unique<impl>(n)) {}
 Q_matrix::~Q_matrix() = default;
 Q_matrix::Q_matrix(const Q_matrix& other)
@@ -130,7 +267,7 @@ std::ostream& operator<<(std::ostream& os, const Q_matrix& Q) {
   for (unsigned j = 0; j < Q.pImpl->r; j++) {
     os << "[ ";
     for (unsigned h = 0; h < Q.pImpl->r; h++) {
-      os << Q.pImpl->data[j][h] << " ";
+      os << Q.pImpl->entry(j, h) << " ";
     }
     os << "]" << std::endl;
   }
