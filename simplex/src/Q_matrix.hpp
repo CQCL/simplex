@@ -1,0 +1,44 @@
+#pragma once
+
+#include <iostream>
+#include <list>
+#include <vector>
+
+// A symmetric 0,1 off-diagonal matrix
+class Q_matrix {
+public:
+  Q_matrix(unsigned n);
+
+  int entry(unsigned h1, unsigned h2) const;
+
+  // XOR row/column k into row/column h
+  void add_rowcol(unsigned h, unsigned k);
+
+  // Swap row/column with row/column r-1
+  void swap_rowcol(unsigned h);
+
+  // List of h s.t. Q[h][r-1] = 1
+  std::list<unsigned> rows_with_terminal_1() const;
+
+  // Flip the (h1, h2) entry for all h1, h2 in H
+  void flip_submatrix(const std::list<unsigned>& H);
+
+  // Flip the (h1, h2) entry for all h1 in H1, h2 in H2 (preserving symmetry)
+  void flip_submatrix(
+    const std::list<unsigned>& H1, const std::list<unsigned>& H2);
+
+  // Append new row/column (given as list of indices where 1)
+  void append_rowcol(const std::list<unsigned>& H);
+
+  // Whether a given row/column is all-zero
+  bool rowcol_is_zero(unsigned h) const;
+
+  void drop_final_rowcol();
+
+  friend std::ostream& operator<<(std::ostream& os, const Q_matrix& Q);
+
+private:
+  unsigned n;
+  unsigned r;
+  std::vector<std::vector<int>> data;
+};
