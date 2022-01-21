@@ -1,8 +1,12 @@
 #include "A_matrix.hpp"
+#include <algorithm>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <set>
 #include <vector>
+
+#if defined (SIMPLEX_DENSE)
 
 struct A_matrix::impl {
   impl(unsigned n) : n(n), r(0), data(n, std::vector<int>(n+1, 0)) {}
@@ -91,6 +95,127 @@ struct A_matrix::impl {
   void drop_final_col() { r--; }
 };
 
+#else
+
+struct A_matrix::impl {
+  impl(unsigned n) : n(n), r(0), rows(n), cols(n+1) {}
+
+  /* Data */
+
+  unsigned n;
+  unsigned r;
+  std::vector<std::set<unsigned>> rows;
+  std::vector<std::set<unsigned>> cols;
+
+  /* Methods */
+
+  int entry(unsigned j, unsigned h) const { return rows[j].contains(h); }
+
+  void add_col(unsigned h, unsigned k) {
+    std::set<unsigned> newcol;
+    for (unsigned j : cols[h]) {
+      if (!cols[k].contains(j)) {
+        newcol.insert(j);
+      }
+    }
+    for (unsigned j : cols[k]) {
+      if (!cols[h].contains(j)) {
+        newcol.insert(j);
+      }
+    }
+    for (unsigned j : cols[h]) {
+      if (!newcol.contains(j)) {
+        rows[j].erase(h);
+      }
+    }
+    for (unsigned j : newcol) {
+      rows[j].insert(h);
+    }
+    cols[h] = newcol;
+  }
+
+  void add_row(unsigned j, unsigned k) {
+    std::set<unsigned> newrow;
+    for (unsigned h : rows[j]) {
+      if (!rows[k].contains(h)) {
+        newrow.insert(h);
+      }
+    }
+    for (unsigned h : rows[k]) {
+      if (!rows[j].contains(h)) {
+        newrow.insert(h);
+      }
+    }
+    for (unsigned h : rows[j]) {
+      if (!newrow.contains(h)) {
+        cols[h].erase(j);
+      }
+    }
+    for (unsigned h : newrow) {
+      cols[h].insert(j);
+    }
+    rows[j] = newrow;
+  }
+
+  unsigned row_weight(unsigned j) const {
+    return rows[j].size();
+  }
+
+  unsigned col_weight(unsigned h) const {
+    return cols[h].size();
+  }
+
+  void swap_col(unsigned h) {
+    for (unsigned j : cols[h]) {
+      if (!cols[r - 1].contains(j)) {
+        rows[j].erase(h);
+        rows[j].insert(r - 1);
+      }
+    }
+    for (unsigned j : cols[r - 1]) {
+      if (!cols[h].contains(j)) {
+        rows[j].erase(r - 1);
+        rows[j].insert(h);
+      }
+    }
+    std::iter_swap(cols.begin() + h, cols.begin() + (r - 1));
+  }
+
+  void zero_append_basis_col(unsigned j) {
+    for (unsigned h : rows[j]) {
+      cols[h].erase(j);
+    }
+    rows[j].clear();
+    rows[j].insert(r);
+    cols[r].insert(j);
+    r++;
+  }
+
+  std::list<unsigned> cols_where_one(unsigned j) const {
+    return std::list<unsigned>(rows[j].begin(), rows[j].end());
+  }
+
+  std::list<unsigned> cols_where_one(unsigned j, unsigned k) const {
+    std::list<unsigned> l;
+    for (unsigned h : rows[j]) {
+      if (rows[k].contains(h)) {
+        l.push_back(h);
+      }
+    }
+    return l;
+  }
+
+  void drop_final_col() {
+    for (unsigned j : cols[r - 1]) {
+      rows[j].erase(r - 1);
+    }
+    cols[r - 1].clear();
+    r--;
+  }
+};
+
+#endif
+
 A_matrix::A_matrix(unsigned n) : pImpl(std::make_unique<impl>(n)) {}
 A_matrix::~A_matrix() = default;
 A_matrix::A_matrix(const A_matrix& other)
@@ -122,7 +247,7 @@ std::ostream& operator<<(std::ostream& os, const A_matrix& A) {
   for (unsigned j = 0; j < A.pImpl->n; j++) {
     os << "[ ";
     for (unsigned h = 0; h < A.pImpl->r; h++) {
-      os << A.pImpl->data[j][h] << " ";
+      os << A.pImpl->entry(j, h) << " ";
     }
     os << "]" << std::endl;
   }
