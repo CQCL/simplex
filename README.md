@@ -19,7 +19,7 @@ cd reference
 ./test-simplex
 ```
 
-There is an option to perform some addition internal state validation during
+There is an option to perform some additional internal state validation during
 testing:
 
 ```shell
