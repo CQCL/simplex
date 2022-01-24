@@ -36,17 +36,15 @@ class QFE:
         return other
 
     def show(self):
-        print("n =", self.n)
-        print("r =", self.r)
-        print("Q:")
-        print(self.Q[: self.r, : self.r])
-        print("R0:")
-        print(self.R0[: self.r])
-        print("R1:")
-        print(self.R1[: self.r])
         print("A:")
         print(self.A[:, : self.r])
         print("b:", self.b)
+        Q = np.copy(self.Q[: self.r, : self.r])
+        for i in range(self.r):
+            Q[i, i] = self.R0[i] + 2 * self.R1[i]
+        print("Q:")
+        print(Q)
+        print("p:", self.p)
 
     def rankA(self):
         Astring = str(self.A[:, : self.r].tolist())
