@@ -4,3 +4,5 @@ add_library(simplex
     Q_matrix.cpp)
 
 target_include_directories(simplex PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+set_property(TARGET simplex PROPERTY POSITION_INDEPENDENT_CODE ON)

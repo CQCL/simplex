@@ -1,7 +1,5 @@
 # Simplex
 
-This software implements the methods described in
-https://arxiv.org/abs/2109.08629 for simulating Clifford circuits.
 This software implements the methods described in [BH21][1] for simulating
 Clifford circuits.
 
@@ -110,5 +108,29 @@ std::cout << S;
 This will print out the matrices _A_ and _Q_, the vector _b_, and the mapping
 _p_ as described in [BH21][1].
 
+# Python module
+
+The C++ implementation is wrapped in a Python module, `pysimplex`. The binding
+code is in the `simplex/pysimplex` directory. To build and install this module:
+
+```shell
+cd simplex
+pip install .
+```
+
+The API is similar to that of the reference and C++ implementations. For
+example:
+
+```python
+from pysimplex import Simplex
+S = Simplex(3)
+S.H(0)
+S.CX(0, 1)
+S.CX(1, 2)
+print(S.MeasZ(0))
+print(S.MeasZ(1))
+```
+
+To see the internal state, use `print(S)`.
 
 [1]: https://arxiv.org/abs/2109.08629

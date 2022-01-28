@@ -1,3 +1,6 @@
 *.pyc
 .cache/
 build/
+_skbuild/
+*.egg-info/
+*.so
