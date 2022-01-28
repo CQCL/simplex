@@ -89,9 +89,14 @@ class QFE:
         if k == c:
             return
         self.A[:, k] ^= self.A[:, c]
-        self.R1[k] ^= self.Q[c, k]  # NB Q is symmetric
+        R0k, R0c = self.R0[k], self.R0[c]
+        Qkc = self.Q[k, c]
         self.Q[: self.r, k] ^= self.Q[: self.r, c]
         self.Q[k, : self.r] ^= self.Q[c, : self.r]
+        self.Q[k, c] ^= R0c
+        self.Q[c, k] ^= R0c
+        self.R0[k] ^= R0c
+        self.R1[k] ^= self.R1[c] ^ Qkc ^ (R0k & R0c)
 
     def ReindexSwapColumns(self, k, c):
         # O(n)

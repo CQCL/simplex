@@ -45,8 +45,15 @@ struct Simplex::impl {
   void ReindexSubtColumn(unsigned k, unsigned c) {
     if (k == c) return;
     A.add_col(k, c);
-    R1[k] ^= Q.entry(c, k);
+    int R0k = R0[k];
+    int R0c = R0[c];
+    int Qkc = Q.entry(k, c);
     Q.add_rowcol(k, c);
+    if (R0c) {
+      Q.flip_submatrix({k, c});
+    }
+    R0[k] ^= R0c;
+    R1[k] ^= R1[c] ^ Qkc ^ (R0k & R0c);
   }
 
   void MakePrincipal(unsigned c, unsigned j) {
