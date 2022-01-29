@@ -108,7 +108,7 @@ std::cout << S;
 This will print out the matrices _A_ and _Q_, the vector _b_, and the mapping
 _p_ as described in [BH21][1].
 
-# Python module
+## Python module
 
 The C++ implementation is wrapped in a Python module, `pysimplex`. The binding
 code is in the `simplex/pysimplex` directory. To build and install this module:
