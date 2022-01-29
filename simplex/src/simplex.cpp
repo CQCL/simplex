@@ -353,22 +353,21 @@ bool Simplex::is_deterministic() const { return pImpl->is_deterministic(); }
 std::ostream& operator<<(std::ostream& os, const Simplex& S) {
   os << "n: " << S.n() << std::endl;
   os << "A:" << std::endl << S.pImpl->A;
-  os << "b: ";
+  os << "b: [ ";
   for (unsigned j = 0; j < S.n(); j++) {
-    os << S.pImpl->b[j];
+    os << S.pImpl->b[j] << " ";
   }
-  os << std::endl;
-  os << "Q:" << std::endl << S.pImpl->Q;
-  os << "R0: ";
-  for (unsigned h = 0; h < S.pImpl->r; h++) {
-    os << S.pImpl->R0[h];
+  os << "]" << std::endl;
+  os << "Q:" << std::endl;
+  unsigned r = S.pImpl->Q.r();
+  for (unsigned j = 0; j < r; j++) {
+    os << "[ ";
+    int R = S.pImpl->R0[j] + 2 * S.pImpl->R1[j];
+    for (unsigned k = 0; k < r; k++) {
+      os << ((j == k) ? R : S.pImpl->Q.entry(j, k)) << " ";
+    }
+    os << "]" << std::endl;
   }
-  os << std::endl;
-  os << "R1: ";
-  for (unsigned h = 0; h < S.pImpl->r; h++) {
-    os << S.pImpl->R1[h];
-  }
-  os << std::endl;
-  os << "p: " << S.pImpl->p;
+  os << "p: " << S.pImpl->p << std::endl;
   return os;
 }

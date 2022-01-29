@@ -41,6 +41,8 @@ public:
 
   void drop_final_rowcol();
 
+  unsigned r() const;
+
   friend std::ostream& operator<<(std::ostream& os, const Q_matrix& Q);
 
 private:

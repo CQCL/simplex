@@ -81,7 +81,7 @@ inline std::ostream& operator<<(std::ostream& os, const Bimap& p) {
   for (auto ij : p.fwd) {
     unsigned i = ij.first;
     unsigned j = ij.second;
-    os << i << " <--> " << j << std::endl;
+    os << i << ":" << j << " ";
   }
   return os;
 }

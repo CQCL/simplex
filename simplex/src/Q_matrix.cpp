@@ -122,13 +122,15 @@ bool Q_matrix::rowcol_is_zero(unsigned h) const {
   return pImpl->rowcol_is_zero(h);
 }
 void Q_matrix::drop_final_rowcol() {pImpl->drop_final_rowcol(); }
+unsigned Q_matrix::r() const { return pImpl->r; }
 
 std::ostream& operator<<(std::ostream& os, const Q_matrix& Q) {
   for (unsigned j = 0; j < Q.pImpl->r; j++) {
+    os << "[ ";
     for (unsigned h = 0; h < Q.pImpl->r; h++) {
-      os << Q.pImpl->data[j][h];
+      os << Q.pImpl->data[j][h] << " ";
     }
-    os << std::endl;
+    os << "]" << std::endl;
   }
   return os;
 }

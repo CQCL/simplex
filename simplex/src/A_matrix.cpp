@@ -120,10 +120,11 @@ void A_matrix::drop_final_col() { pImpl->drop_final_col(); }
 
 std::ostream& operator<<(std::ostream& os, const A_matrix& A) {
   for (unsigned j = 0; j < A.pImpl->n; j++) {
+    os << "[ ";
     for (unsigned h = 0; h < A.pImpl->r; h++) {
-      os << A.pImpl->data[j][h];
+      os << A.pImpl->data[j][h] << " ";
     }
-    os << std::endl;
+    os << "]" << std::endl;
   }
   return os;
 }

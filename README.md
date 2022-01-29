@@ -2,6 +2,8 @@
 
 This software implements the methods described in
 https://arxiv.org/abs/2109.08629 for simulating Clifford circuits.
+This software implements the methods described in [BH21][1] for simulating
+Clifford circuits.
 
 ## Reference implementation
 
@@ -105,7 +107,8 @@ The internal state can be viewed by means of the `operator<<` method:
 std::cout << S;
 ```
 
-This will print out the matrices _A_ and _Q_, the vector _b_, etc. Note that
-_Q_ is stored as a 0,1-matrix representing the off-diagonal elements only; the
-diagonal elements are represented by two 0,1-vectors _R0_ and _R1_ representing
-the low and high bits respectively of the diagonal elements.
+This will print out the matrices _A_ and _Q_, the vector _b_, and the mapping
+_p_ as described in [BH21][1].
+
+
+[1]: https://arxiv.org/abs/2109.08629
