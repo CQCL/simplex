@@ -126,9 +126,9 @@ void Q_matrix::drop_final_rowcol() {pImpl->drop_final_rowcol(); }
 std::ostream& operator<<(std::ostream& os, const Q_matrix& Q) {
   for (unsigned j = 0; j < Q.pImpl->r; j++) {
     for (unsigned h = 0; h < Q.pImpl->r; h++) {
-      std::cout << Q.pImpl->data[j][h];
+      os << Q.pImpl->data[j][h];
     }
-    std::cout << std::endl;
+    os << std::endl;
   }
   return os;
 }
