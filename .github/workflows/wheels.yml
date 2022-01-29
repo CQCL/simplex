@@ -1,0 +1,27 @@
+name: wheels
+on:
+  push:
+    branches:
+      - 'wheel/**'
+jobs:
+  build_linux_wheels:
+    name: build linux wheels
+    runs-on: ubuntu-20.04
+    env:
+      PY_VERS: cp38-cp38 cp39-cp39 cp310-cp310
+    steps:
+    - uses: actions/checkout@v2
+    - name: set up container
+      run: |
+        docker create --name linux_build -i -v /:/host quay.io/pypa/manylinux2014_x86_64:latest /bin/bash
+        docker cp . linux_build:/simplex/
+    - name: run build
+      run: |
+        docker start linux_build
+        docker exec -e PY_VERS="${PY_VERS}" linux_build /bin/bash -c "/simplex/.github/workflows/linuxbuildwheels"
+        mkdir wheelhouse
+        docker cp linux_build:/simplex/simplex/audited/. wheelhouse/
+    - uses: actions/upload-artifact@v2
+      with:
+        name: linux_wheels
+        path: wheelhouse/
