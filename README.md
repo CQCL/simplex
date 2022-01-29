@@ -61,7 +61,7 @@ coin was actually specified.
 
 ## C++ implementation
 
-The C++ implementation is in the `simplex` directory. It is built using `cmake`. To build the shared library and the unit tests:
+The C++ implementation is in the `simplex` directory. It is built using `cmake`. To build the library and the unit tests:
 
 ```shell
 cd simplex
