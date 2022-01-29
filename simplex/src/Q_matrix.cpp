@@ -52,7 +52,9 @@ struct Q_matrix::impl {
   void flip_submatrix(const std::list<unsigned>& H) {
     for (unsigned h1 : H) {
       for (unsigned h2 : H) {
-        data[h1][h2] ^= 1;
+        if (h1 != h2) {
+          data[h1][h2] ^= 1;
+        }
       }
     }
   }

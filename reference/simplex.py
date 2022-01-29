@@ -63,6 +63,7 @@ class QFE:
         assert all(
             self.Q[i, j] == self.Q[j, i] for i in range(self.r) for j in range(self.r)
         )
+        assert all(self.Q[i, i] == 0 for i in range(self.r))
         assert all(
             self.A[i, j] in range(2) for i in range(self.n) for j in range(self.r)
         )
@@ -163,6 +164,12 @@ class QFE:
         self.decrement_r()
         self.R1[: self.r] ^= z & self.Q[: self.r, self.r]
 
+    def flip_Q_submatrix(self, H):
+        for h1 in H:
+            for h2 in H:
+                if h1 != h2:
+                    self.Q[h1, h2] ^= 1
+
     def ZeroColumnElim(self, c):
         # O(n)
         # Reduces r by 1 or 2.
@@ -173,7 +180,7 @@ class QFE:
         u0, u1 = self.R0[self.r - 1], self.R1[self.r - 1]
         self.decrement_r()
         if u0 == 1:
-            self.Q[np.ix_(H, H)] ^= 1
+            self.flip_Q_submatrix(H)
             self.R0[H] ^= 1
             self.R1[H] ^= self.R0[H] ^ u1
         else:
@@ -224,14 +231,14 @@ class QFE:
     def SimulateS(self, j):
         # O(r^2)
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.Q[np.ix_(H, H)] ^= 1
+        self.flip_Q_submatrix(H)
         self.R1[H] ^= self.R0[H] ^ self.b[j]
         self.R0[H] ^= 1
 
     def SimulateSdg(self, j):
         # O(r^2)
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.Q[np.ix_(H, H)] ^= 1
+        self.flip_Q_submatrix(H)
         self.R0[H] ^= 1
         self.R1[H] ^= self.R0[H] ^ self.b[j]
 
@@ -307,7 +314,7 @@ class QFE:
                 self.R1[c] = beta
                 return beta
         H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.Q[np.ix_(H, H)] ^= 1
+        self.flip_Q_submatrix(H)
         self.R0[H] ^= 1
         self.R1[H] ^= self.R0[H] ^ self.b[j] ^ beta
         self.Q[self.r, : self.r] = 0
