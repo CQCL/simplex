@@ -1,10 +1,15 @@
 from skbuild import setup
+from pathlib import Path
+
+curdir = Path(__file__).parent
+long_description = (curdir / "pysimplex.md").read_text()
 
 setup(
     name="pysimplex",
     version="0.0.1",
     description="A fast Clifford circuit simulator",
-    long_description="Based on https://arxiv.org/abs/2109.08629. Very alpha! Known bugs.",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Alec Edgington",
     author_email="alec.edgington@cambridgequantum.com",
     license="Apache 2",
