@@ -25,3 +25,30 @@ jobs:
       with:
         name: linux_wheels
         path: wheelhouse/
+  build_macos_wheels:
+    name: build macos wheels
+    runs-on: macos-11
+    steps:
+    - uses: actions/checkout@v2
+    - name: set up python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: build wheel (3.8)
+      run: .github/workflows/macosbuildwheel
+    - name: set up python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+    - name: build wheel (3.9)
+      run: .github/workflows/macosbuildwheel
+    - name: set up python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: build wheel (3.10)
+      run: .github/workflows/macosbuildwheel
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macos_wheels
+        path: wheelhouse/
