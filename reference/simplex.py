@@ -307,26 +307,11 @@ class QFE:
 
     def SimulateMeasY(self, j, coin=None):
         # O(nr)
-        c = self.principate(j)
-        if (c is None) or any(self.Q[c, k] == 1 for k in range(self.r) if k != c):
-            beta = self.toss_coin(coin)
-        else:
-            if self.R0[c] == 1:
-                return self.R1[c]
-            else:
-                beta = self.toss_coin(coin)
-                self.R0[c] = 1
-                self.R1[c] = beta
-                return beta
-        H = [h for h in range(self.r) if self.A[j, h] == 1]
-        self.flip_Q_submatrix(H)
-        self.R0[H] ^= 1
-        self.R1[H] ^= self.R0[H] ^ self.b[j] ^ beta
-        self.Q[self.r, : self.r] = 0
-        self.Q[: self.r, self.r] = 0
-        self.R0[self.r] = 1
-        self.R1[self.r] = beta
-        self.new_principal_column(j, c)
+        self.SimulateSdg(j)
+        self.SimulateH(j)
+        beta = self.SimulateMeasZ(j, coin=coin)
+        self.SimulateH(j)
+        self.SimulateS(j)
         return beta
 
 

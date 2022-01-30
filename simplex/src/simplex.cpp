@@ -273,28 +273,11 @@ struct Simplex::impl {
   }
 
   int SimulateMeasY(unsigned j, std::optional<int> coin) {
-    int beta;
-    std::optional<unsigned> c = principate(j);
-    if (c && Q.rowcol_is_zero(*c)) {
-      if (R0[*c] == 1) {
-        return R1[*c];
-      } else {
-        beta = toss_coin(coin);
-        R0[*c] = 1;
-        R1[*c] = beta;
-        return beta;
-      }
-    } else {
-      beta = toss_coin(coin);
-    }
-    const std::list<unsigned> H = A.cols_where_one(j);
-    Q.flip_submatrix(H);
-    const int z = b[j] ^ beta;
-    for (unsigned h : H) {
-      R0[h] ^= 1;
-      R1[h] ^= R0[h] ^ z;
-    }
-    new_principal_column(j, 1, beta, c);
+    SimulateSdg(j);
+    SimulateH(j);
+    int beta = SimulateMeasZ(j, coin);
+    SimulateH(j);
+    SimulateS(j);
     return beta;
   }
 
