@@ -11,8 +11,8 @@ Known issues:
 Work is in progress on both these issues and the package will be updated in due
 course.
 
-Wheels are currently available for Linux only, for Python versions 3.8, 3.9 and
-3.10. I will be adding wheels for MacOS and Windows soon.
+Wheels are currently available for Linux, MacOS and Windows, for Python versions
+3.8, 3.9 and 3.10.
 
 Example usage:
 
