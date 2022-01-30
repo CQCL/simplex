@@ -133,4 +133,15 @@ print(S.MeasZ(1))
 
 To see the internal state, use `print(S)`.
 
+### Installation from pypi
+
+To install the current stable version from pypi, simply:
+
+```shell
+pip install pysimplex
+```
+
+The package is available for Linux, MacOS (x86 only) and Windows, and for Python
+versions 3.8, 3.9 and 3.10.
+
 [1]: https://arxiv.org/abs/2109.08629
