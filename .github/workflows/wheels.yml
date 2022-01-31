@@ -52,6 +52,33 @@ jobs:
       with:
         name: macos_wheels
         path: wheelhouse/
+  build_macos_m1_wheels:
+    name: build macos m1 wheels
+    runs-on: [self-hosted, macos, M1]
+    defaults:
+      run:
+        shell: "/usr/bin/arch -arch arm64e /bin/bash {0}"
+    steps:
+    - uses: actions/checkout@v2
+    - name: build wheel (3.8)
+      run: |
+        eval "$(pyenv init -)"
+        pyenv shell tket-3.8
+        .github/workflows/macosbuildwheel
+    - name: build wheel (3.9)
+      run: |
+        eval "$(pyenv init -)"
+        pyenv shell tket-3.9
+        .github/workflows/macosbuildwheel
+    - name: build wheel (3.10)
+      run: |
+        eval "$(pyenv init -)"
+        pyenv shell tket-3.10
+        .github/workflows/macosbuildwheel
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macos_m1_wheels
+        path: wheelhouse/
   build_windows_wheels:
     name: build windows wheels
     runs-on: windows-2019
