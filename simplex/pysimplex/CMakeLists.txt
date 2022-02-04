@@ -3,8 +3,8 @@ include(GNUInstallDirs)
 include(FetchContent)
 FetchContent_Declare(
   pybind11
-  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.9.0.tar.gz
-  URL_HASH SHA256=057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb
+  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.9.1.tar.gz
+  URL_HASH SHA256=c6160321dc98e6e1184cc791fbeadd2907bb4a0ce0e447f2ea4ff8ab56550913
 )
 FetchContent_MakeAvailable(pybind11)
 pybind11_add_module(_simplex MODULE pysimplex.cpp)
