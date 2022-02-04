@@ -2,15 +2,6 @@
 
 This is a fast Clifford circuit simulator based on [BH21][1].
 
-Known issues:
-
-* Not yet optimized for sparsity.
-* Measurements in the Y basis, while correct, are less efficient than they
-  should be because the method described in the paper was not quite working.
-
-Work is in progress on both these issues and the package will be updated in due
-course.
-
 Wheels are currently available for Linux, MacOS and Windows, for Python versions
 3.8, 3.9 and 3.10.
 
