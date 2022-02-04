@@ -22,35 +22,35 @@ PYBIND11_MODULE(_simplex, m) {
             return ss.str();
         })
     .def("X",
-        &Simplex::X,
+        [](Simplex *S, unsigned j) { S->X(j); return S; },
         "Apply an X gate to qubit `j`.",
         py::arg("j"))
     .def("Y",
-        &Simplex::Y,
+        [](Simplex *S, unsigned j) { S->Y(j); return S; },
         "Apply a Y gate to qubit `j`.",
         py::arg("j"))
     .def("Z",
-        &Simplex::Z,
+        [](Simplex *S, unsigned j) { S->Z(j); return S; },
         "Apply a Z gate to qubit `j`.",
         py::arg("j"))
     .def("H",
-        &Simplex::H,
+        [](Simplex *S, unsigned j) { S->H(j); return S; },
         "Apply an H gate to qubit `j`.",
         py::arg("j"))
     .def("S",
-        &Simplex::S,
+        [](Simplex *S, unsigned j) { S->S(j); return S; },
         "Apply an S gate to qubit `j`.",
         py::arg("j"))
     .def("Sdg",
-        &Simplex::Sdg,
+        [](Simplex *S, unsigned j) { S->Sdg(j); return S; },
         "Apply an inverse S gate to qubit `j`.",
         py::arg("j"))
     .def("CX",
-        &Simplex::CX,
+        [](Simplex *S, unsigned j, unsigned k) { S->CX(j, k); return S; },
         "Apply a CX gate to qubits `j` and `k`.",
         py::arg("j"), py::arg("k"))
     .def("CZ",
-        &Simplex::CZ,
+        [](Simplex *S, unsigned j, unsigned k) { S->CZ(j, k); return S; },
         "Apply a CZ gate to qubits `j` and `k`.",
         py::arg("j"), py::arg("k"))
     .def("MeasX",
