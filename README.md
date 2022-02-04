@@ -77,6 +77,20 @@ Then to run the tests:
 ./test/simplex-test
 ```
 
+### Optimization for sparsity
+
+There are two implementations, one (the default) optimized for sparse circuits
+(and hence sparse matrices), the other not. If you are working with dense
+circuits, then the dense-matrix-based implementation may be faster. To build
+this, simply set the `SIMPLEX_DENSE` option when running `cmake`. From the
+`build` directory:
+
+```shell
+rm -f CMakeCache.txt
+cmake .. -DSIMPLEX_DENSE=ON
+cmake --build .
+```
+
 ### API
 
 The C++ API is similar to the API of the Python reference implementation.
