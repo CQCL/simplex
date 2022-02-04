@@ -24,7 +24,7 @@ public:
   void swap_rowcol(unsigned h);
 
   // Set of h s.t. Q[h][r-1] = 1
-  std::set<unsigned> rows_with_terminal_1() const;
+  const std::set<unsigned> rows_with_terminal_1() const;
 
   // Flip the (h1, h2) entry for all h1, h2 in H
   void flip_submatrix(const std::set<unsigned>& H);

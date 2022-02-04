@@ -140,7 +140,7 @@ struct Simplex::impl {
 
   void ZeroColumnElim(unsigned c) {
     ReindexSwapColumn(c);
-    std::set<unsigned> H = Q.rows_with_terminal_1();
+    const std::set<unsigned> H = Q.rows_with_terminal_1();
     int u0 = R0[r - 1];
     int u1 = R1[r - 1];
     contract();
@@ -152,7 +152,6 @@ struct Simplex::impl {
       }
     } else if (!H.empty()) {
       unsigned l = *H.begin();
-      H.erase(l);
       for (unsigned h : H) {
         ReindexSubtColumn(h, l);
       }

@@ -68,7 +68,7 @@ struct A_matrix::impl {
     r++;
   }
 
-  std::set<unsigned> cols_where_one(unsigned j) const {
+  const std::set<unsigned> cols_where_one(unsigned j) const {
     const std::vector<int>& A_j = data[j];
     std::set<unsigned> H;
     for (unsigned h = 0; h < r; h++) {
@@ -79,7 +79,7 @@ struct A_matrix::impl {
     return H;
   }
 
-  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
+  const std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
     const std::vector<int>& A_j = data[j];
     const std::vector<int>& A_k = data[k];
     std::set<unsigned> H;
@@ -190,11 +190,11 @@ struct A_matrix::impl {
     r++;
   }
 
-  std::set<unsigned> cols_where_one(unsigned j) const {
+  const std::set<unsigned> cols_where_one(unsigned j) const {
     return rows[j];
   }
 
-  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
+  const std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
     std::set<unsigned> l;
     for (unsigned h : rows[j]) {
       if (rows[k].contains(h)) {
@@ -234,10 +234,10 @@ void A_matrix::swap_col(unsigned h) { pImpl->swap_col(h); }
 void A_matrix::zero_append_basis_col(unsigned j) {
   pImpl->zero_append_basis_col(j);
 }
-std::set<unsigned> A_matrix::cols_where_one(unsigned j) const {
+const std::set<unsigned> A_matrix::cols_where_one(unsigned j) const {
   return pImpl->cols_where_one(j);
 }
-std::set<unsigned> A_matrix::cols_where_one(unsigned j, unsigned k) const {
+const std::set<unsigned> A_matrix::cols_where_one(unsigned j, unsigned k) const {
   return pImpl->cols_where_one(j, k);
 }
 void A_matrix::drop_final_col() { pImpl->drop_final_col(); }

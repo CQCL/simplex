@@ -35,10 +35,10 @@ public:
   void zero_append_basis_col(unsigned j);
 
   // Set of column indices h s.t. A[j,h] = 1
-  std::set<unsigned> cols_where_one(unsigned j) const;
+  const std::set<unsigned> cols_where_one(unsigned j) const;
 
   // Set of column indices h s.t. A[j,h] = A[j,k] = 1
-  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const;
+  const std::set<unsigned> cols_where_one(unsigned j, unsigned k) const;
 
   void drop_final_col();
 

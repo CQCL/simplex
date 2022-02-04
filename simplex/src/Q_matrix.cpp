@@ -43,7 +43,7 @@ struct Q_matrix::impl {
     }
   }
 
-  std::set<unsigned> rows_with_terminal_1() const {
+  const std::set<unsigned> rows_with_terminal_1() const {
     std::set<unsigned> H;
     unsigned r1 = r - 1;
     for (unsigned h = 0; h < r1; h++) {
@@ -158,7 +158,7 @@ struct Q_matrix::impl {
     }
   }
 
-  std::set<unsigned> rows_with_terminal_1() const {
+  const std::set<unsigned> rows_with_terminal_1() const {
     return rows[r - 1];
   }
 
@@ -243,7 +243,7 @@ int Q_matrix::entry(unsigned h1, unsigned h2) const {
 }
 void Q_matrix::add_rowcol(unsigned h, unsigned k) { pImpl->add_rowcol(h, k); }
 void Q_matrix::swap_rowcol(unsigned h) { pImpl->swap_rowcol(h); }
-std::set<unsigned> Q_matrix::rows_with_terminal_1() const {
+const std::set<unsigned> Q_matrix::rows_with_terminal_1() const {
   return pImpl->rows_with_terminal_1();
 }
 void Q_matrix::flip_submatrix(const std::set<unsigned>& H) {
