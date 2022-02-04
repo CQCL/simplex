@@ -5,10 +5,10 @@
 
 #include <algorithm>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <optional>
 #include <random>
+#include <set>
 #include <vector>
 
 /* Implementation */
@@ -58,7 +58,7 @@ struct Simplex::impl {
 
   void MakePrincipal(unsigned c, unsigned j) {
     if (A.entry(j, c)) {
-      const std::list<unsigned> H = A.cols_where_one(j);
+      const std::set<unsigned> H = A.cols_where_one(j);
       for (unsigned k : H) {
         if (k != c) {
           // This modifies A[j][k] but no other entries in A_j:
@@ -112,7 +112,7 @@ struct Simplex::impl {
     p.swap_fwd(k, r1);
   }
 
-  void expand(unsigned j, const std::list<unsigned>& H) {
+  void expand(unsigned j, const std::set<unsigned>& H) {
     A.zero_append_basis_col(j);
     Q.append_rowcol(H);
     r++;
@@ -140,7 +140,7 @@ struct Simplex::impl {
 
   void ZeroColumnElim(unsigned c) {
     ReindexSwapColumn(c);
-    std::list<unsigned> H = Q.rows_with_terminal_1();
+    std::set<unsigned> H = Q.rows_with_terminal_1();
     int u0 = R0[r - 1];
     int u1 = R1[r - 1];
     contract();
@@ -151,8 +151,8 @@ struct Simplex::impl {
         R1[h] ^= R0[h] ^ u1;
       }
     } else if (!H.empty()) {
-      unsigned l = H.front();
-      H.pop_front();
+      unsigned l = *H.begin();
+      H.erase(l);
       for (unsigned h : H) {
         ReindexSubtColumn(h, l);
       }
@@ -165,7 +165,7 @@ struct Simplex::impl {
     unsigned j,
     int r0, int r1,
     std::optional<unsigned> c = std::nullopt,
-    const std::list<unsigned>& H = std::list<unsigned>())
+    const std::set<unsigned>& H = std::set<unsigned>())
   {
     expand(j, H);
     b[j] = 0;
@@ -182,7 +182,7 @@ struct Simplex::impl {
   void SimulateY(unsigned j) { SimulateZ(j); SimulateX(j); }
 
   void SimulateZ(unsigned j) {
-    const std::list<unsigned> H = A.cols_where_one(j);
+    const std::set<unsigned> H = A.cols_where_one(j);
     for (unsigned h : H) {
       R1[h] ^= 1;
     }
@@ -190,12 +190,12 @@ struct Simplex::impl {
 
   void SimulateH(unsigned j) {
     std::optional<unsigned> c = principate(j);
-    const std::list<unsigned> H = A.cols_where_one(j);
+    const std::set<unsigned> H = A.cols_where_one(j);
     new_principal_column(j, 0, b[j], c, H);
   }
 
   void SimulateS(unsigned j) {
-    const std::list<unsigned> H = A.cols_where_one(j);
+    const std::set<unsigned> H = A.cols_where_one(j);
     Q.flip_submatrix(H);
     int z = b[j];
     for (unsigned h : H) {
@@ -205,7 +205,7 @@ struct Simplex::impl {
   }
 
   void SimulateSdg(unsigned j) {
-    const std::list<unsigned> H = A.cols_where_one(j);
+    const std::set<unsigned> H = A.cols_where_one(j);
     Q.flip_submatrix(H);
     const int z = b[j];
     for (unsigned h : H) {
@@ -223,10 +223,10 @@ struct Simplex::impl {
   }
 
   void SimulateCZ(unsigned j, unsigned k) {
-    const std::list<unsigned> H_j = A.cols_where_one(j);
-    const std::list<unsigned> H_k = A.cols_where_one(k);
+    const std::set<unsigned> H_j = A.cols_where_one(j);
+    const std::set<unsigned> H_k = A.cols_where_one(k);
     Q.flip_submatrix(H_j, H_k);
-    const std::list<unsigned> H_jk = A.cols_where_one(j, k);
+    const std::set<unsigned> H_jk = A.cols_where_one(j, k);
     for (unsigned h : H_jk) {
       R1[h] ^= 1;
     }
@@ -264,7 +264,7 @@ struct Simplex::impl {
     } else {
       beta = toss_coin(coin);
     }
-    const std::list<unsigned> H = A.cols_where_one(j);
+    const std::set<unsigned> H = A.cols_where_one(j);
     for (unsigned h : H) {
       R1[h] ^= beta;
     }
@@ -286,7 +286,7 @@ struct Simplex::impl {
       return b[j];
     } else {
       int beta = toss_coin(coin);
-      const std::list<unsigned> H = A.cols_where_one(j);
+      const std::set<unsigned> H = A.cols_where_one(j);
       unsigned k;
       unsigned m = n + 1;
       for (unsigned h : H) {

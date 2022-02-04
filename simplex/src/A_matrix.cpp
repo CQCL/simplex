@@ -1,7 +1,6 @@
 #include "A_matrix.hpp"
 #include <algorithm>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <set>
 #include <vector>
@@ -69,24 +68,24 @@ struct A_matrix::impl {
     r++;
   }
 
-  std::list<unsigned> cols_where_one(unsigned j) const {
+  std::set<unsigned> cols_where_one(unsigned j) const {
     const std::vector<int>& A_j = data[j];
-    std::list<unsigned> H;
+    std::set<unsigned> H;
     for (unsigned h = 0; h < r; h++) {
       if (A_j[h]) {
-        H.push_back(h);
+        H.insert(h);
       }
     }
     return H;
   }
 
-  std::list<unsigned> cols_where_one(unsigned j, unsigned k) const {
+  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
     const std::vector<int>& A_j = data[j];
     const std::vector<int>& A_k = data[k];
-    std::list<unsigned> H;
+    std::set<unsigned> H;
     for (unsigned h = 0; h < r; h++) {
       if (A_j[h] & A_k[h]) {
-        H.push_back(h);
+        H.insert(h);
       }
     }
     return H;
@@ -191,15 +190,15 @@ struct A_matrix::impl {
     r++;
   }
 
-  std::list<unsigned> cols_where_one(unsigned j) const {
-    return std::list<unsigned>(rows[j].begin(), rows[j].end());
+  std::set<unsigned> cols_where_one(unsigned j) const {
+    return rows[j];
   }
 
-  std::list<unsigned> cols_where_one(unsigned j, unsigned k) const {
-    std::list<unsigned> l;
+  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const {
+    std::set<unsigned> l;
     for (unsigned h : rows[j]) {
       if (rows[k].contains(h)) {
-        l.push_back(h);
+        l.insert(h);
       }
     }
     return l;
@@ -235,10 +234,10 @@ void A_matrix::swap_col(unsigned h) { pImpl->swap_col(h); }
 void A_matrix::zero_append_basis_col(unsigned j) {
   pImpl->zero_append_basis_col(j);
 }
-std::list<unsigned> A_matrix::cols_where_one(unsigned j) const {
+std::set<unsigned> A_matrix::cols_where_one(unsigned j) const {
   return pImpl->cols_where_one(j);
 }
-std::list<unsigned> A_matrix::cols_where_one(unsigned j, unsigned k) const {
+std::set<unsigned> A_matrix::cols_where_one(unsigned j, unsigned k) const {
   return pImpl->cols_where_one(j, k);
 }
 void A_matrix::drop_final_col() { pImpl->drop_final_col(); }

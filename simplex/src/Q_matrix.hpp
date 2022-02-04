@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <list>
 #include <memory>
+#include <set>
 
 // A symmetric 0,1 off-diagonal matrix
 class Q_matrix {
@@ -23,18 +23,18 @@ public:
   // Swap row/column with row/column r-1
   void swap_rowcol(unsigned h);
 
-  // List of h s.t. Q[h][r-1] = 1
-  std::list<unsigned> rows_with_terminal_1() const;
+  // Set of h s.t. Q[h][r-1] = 1
+  std::set<unsigned> rows_with_terminal_1() const;
 
   // Flip the (h1, h2) entry for all h1, h2 in H
-  void flip_submatrix(const std::list<unsigned>& H);
+  void flip_submatrix(const std::set<unsigned>& H);
 
   // Flip the (h1, h2) entry for all h1 in H1, h2 in H2 (preserving symmetry)
   void flip_submatrix(
-    const std::list<unsigned>& H1, const std::list<unsigned>& H2);
+    const std::set<unsigned>& H1, const std::set<unsigned>& H2);
 
-  // Append new row/column (given as list of indices where 1)
-  void append_rowcol(const std::list<unsigned>& H);
+  // Append new row/column (given as set of indices where 1)
+  void append_rowcol(const std::set<unsigned>& H);
 
   // Whether a given row/column is all-zero
   bool rowcol_is_zero(unsigned h) const;

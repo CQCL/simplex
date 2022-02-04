@@ -1,7 +1,6 @@
 #include "Q_matrix.hpp"
 #include <algorithm>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <set>
 #include <vector>
@@ -44,16 +43,16 @@ struct Q_matrix::impl {
     }
   }
 
-  std::list<unsigned> rows_with_terminal_1() const {
-    std::list<unsigned> H;
+  std::set<unsigned> rows_with_terminal_1() const {
+    std::set<unsigned> H;
     unsigned r1 = r - 1;
     for (unsigned h = 0; h < r1; h++) {
-      if (data[h][r1]) H.push_back(h);
+      if (data[h][r1]) H.insert(h);
     }
     return H;
   }
 
-  void flip_submatrix(const std::list<unsigned>& H) {
+  void flip_submatrix(const std::set<unsigned>& H) {
     for (unsigned h1 : H) {
       for (unsigned h2 : H) {
         if (h1 != h2) {
@@ -64,7 +63,7 @@ struct Q_matrix::impl {
   }
 
   void flip_submatrix(
-    const std::list<unsigned>& H1, const std::list<unsigned>& H2)
+    const std::set<unsigned>& H1, const std::set<unsigned>& H2)
   {
     for (unsigned h1 : H1) {
       for (unsigned h2 : H2) {
@@ -74,7 +73,7 @@ struct Q_matrix::impl {
     }
   }
 
-  void append_rowcol(const std::list<unsigned>& H) {
+  void append_rowcol(const std::set<unsigned>& H) {
     for (unsigned h = 0; h < r; h++) {
       data[h][r] = data[r][h] = 0;
     }
@@ -159,11 +158,11 @@ struct Q_matrix::impl {
     }
   }
 
-  std::list<unsigned> rows_with_terminal_1() const {
-    return std::list<unsigned>(rows[r - 1].begin(), rows[r - 1].end());
+  std::set<unsigned> rows_with_terminal_1() const {
+    return rows[r - 1];
   }
 
-  void flip_submatrix(const std::list<unsigned>& H) {
+  void flip_submatrix(const std::set<unsigned>& H) {
     for (unsigned h1 : H) {
       for (unsigned h2 : H) {
         if (h1 < h2) {
@@ -180,7 +179,7 @@ struct Q_matrix::impl {
   }
 
   void flip_submatrix(
-    const std::list<unsigned>& H1, const std::list<unsigned>& H2)
+    const std::set<unsigned>& H1, const std::set<unsigned>& H2)
   {
     for (unsigned h1 : H1) {
       for (unsigned h2 : H2) {
@@ -197,7 +196,7 @@ struct Q_matrix::impl {
     }
   }
 
-  void append_rowcol(const std::list<unsigned>& H) {
+  void append_rowcol(const std::set<unsigned>& H) {
     for (unsigned h : H) {
       rows[r].insert(h);
       rows[h].insert(r);
@@ -244,17 +243,17 @@ int Q_matrix::entry(unsigned h1, unsigned h2) const {
 }
 void Q_matrix::add_rowcol(unsigned h, unsigned k) { pImpl->add_rowcol(h, k); }
 void Q_matrix::swap_rowcol(unsigned h) { pImpl->swap_rowcol(h); }
-std::list<unsigned> Q_matrix::rows_with_terminal_1() const {
+std::set<unsigned> Q_matrix::rows_with_terminal_1() const {
   return pImpl->rows_with_terminal_1();
 }
-void Q_matrix::flip_submatrix(const std::list<unsigned>& H) {
+void Q_matrix::flip_submatrix(const std::set<unsigned>& H) {
   pImpl->flip_submatrix(H);
 }
 void Q_matrix::flip_submatrix(
-  const std::list<unsigned>& H1, const std::list<unsigned>& H2) {
+  const std::set<unsigned>& H1, const std::set<unsigned>& H2) {
   pImpl->flip_submatrix(H1, H2);
 }
-void Q_matrix::append_rowcol(const std::list<unsigned>& H) {
+void Q_matrix::append_rowcol(const std::set<unsigned>& H) {
   pImpl->append_rowcol(H);
 }
 bool Q_matrix::rowcol_is_zero(unsigned h) const {

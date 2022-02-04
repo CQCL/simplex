@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <list>
 #include <memory>
+#include <set>
 
 class A_matrix {
 public:
@@ -34,11 +34,11 @@ public:
   // Zero row j and append new column e_j
   void zero_append_basis_col(unsigned j);
 
-  // List of column indices h s.t. A[j,h] = 1
-  std::list<unsigned> cols_where_one(unsigned j) const;
+  // Set of column indices h s.t. A[j,h] = 1
+  std::set<unsigned> cols_where_one(unsigned j) const;
 
-  // List of column indices h s.t. A[j,h] = A[j,k] = 1
-  std::list<unsigned> cols_where_one(unsigned j, unsigned k) const;
+  // Set of column indices h s.t. A[j,h] = A[j,k] = 1
+  std::set<unsigned> cols_where_one(unsigned j, unsigned k) const;
 
   void drop_final_col();
 
