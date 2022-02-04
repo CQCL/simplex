@@ -138,9 +138,7 @@ example:
 ```python
 from pysimplex import Simplex
 S = Simplex(3)
-S.H(0)
-S.CX(0, 1)
-S.CX(1, 2)
+S.H(0).CX(0, 1).CX(1, 2)
 print(S.MeasZ(0))
 print(S.MeasZ(1))
 ```

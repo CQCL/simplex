@@ -10,8 +10,7 @@ Example usage:
 ```python
 from pysimplex import Simplex
 S = Simplex(2) # a 2-qubit system
-S.H(0)
-S.CX(0, 1)
+S.H(0).CX(0, 1)
 b0 = S.MeasZ(0, coin=0) # 'coin' is an optional argument that fixes the result
 assert b0 == 0 # without 'coin' it would be 0 or 1 with equal probability
 b1 = S.MeasZ(1)
