@@ -276,7 +276,7 @@ struct Simplex::impl {
     std::optional<unsigned> c = principate(j);
     if (c && Q.rowcol_is_zero(*c)) {
       if (R0[*c] == 1) {
-        return R1[*c];
+        return R1[*c] ^ b[j];
       } else {
         beta = toss_coin(coin);
         R0[*c] = 1;
