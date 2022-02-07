@@ -312,7 +312,7 @@ class QFE:
             beta = self.toss_coin(coin)
         else:
             if self.R0[c] == 1:
-                return self.R1[c]
+                return self.R1[c] ^ self.b[j]
             else:
                 beta = self.toss_coin(coin)
                 self.R0[c] = 1
