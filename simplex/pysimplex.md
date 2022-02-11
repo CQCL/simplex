@@ -19,6 +19,7 @@ assert not S.is_deterministic() # 'coin' is irrelevant here
 ```
 
 The available operations are: `X`, `Y`, `Z`, `H`, `S`, `Sdg`, `CX`, `CZ`,
-`MeasX`, `MeasY` and `MeasZ`.
+`MeasX`, `MeasY` and `MeasZ`. The global phase (in units of pi/4, modulo 8) can
+be retrieved with the `phase` property.
 
 [1]: https://arxiv.org/abs/2109.08629

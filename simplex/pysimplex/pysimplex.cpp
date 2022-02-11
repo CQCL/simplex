@@ -80,6 +80,9 @@ PYBIND11_MODULE(_simplex, m) {
         "If the outcome is non-deterministic, then the outcome is the value of"
         "`coin` if specified (must be 0 or 1), otherwise random.",
         py::arg("j"), py::arg("coin") = std::nullopt)
+    .def_property_readonly("phase",
+        &Simplex::phase,
+        "Global phase, in units of pi/4 (an integer in the range [0,8))")
     .def("is_deterministic",
         &Simplex::is_deterministic,
         "Report whether all measurements are deterministic.");

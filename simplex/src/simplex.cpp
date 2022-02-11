@@ -24,7 +24,7 @@ private:
 
 struct Simplex::impl {
   impl(unsigned n, int seed = 0)
-    : n(n), r(0), A(n), b(n, 0), Q(n), R0(n+1, 0), R1(n+1, 0), p(),
+    : n(n), r(0), A(n), b(n, 0), Q(n), R0(n+1, 0), R1(n+1, 0), p(), g(0),
     deterministic(true), rbg(seed) {}
 
   /* Data */
@@ -37,6 +37,7 @@ struct Simplex::impl {
   std::vector<int> R0;
   std::vector<int> R1;
   Bimap p;
+  int g;
   bool deterministic;
   RBG rbg;
 
@@ -134,6 +135,11 @@ struct Simplex::impl {
       for (unsigned h = 0; h < r1; h++) {
         R1[h] ^= Q.entry(h, r1);
       }
+      if (z) {
+        if (R0[r1]) g += 2;
+        if (R1[r1]) g += 4;
+        g %= 8;
+      }
     }
     contract();
   }
@@ -150,6 +156,10 @@ struct Simplex::impl {
         R0[h] ^= 1;
         R1[h] ^= R0[h] ^ u1;
       }
+      g += 2;
+      if (u0) g += 7;
+      if (u1) g += 6;
+      g %= 8;
     } else if (!H.empty()) {
       unsigned l = *H.begin();
       for (unsigned h : H) {
@@ -178,9 +188,15 @@ struct Simplex::impl {
 
   void SimulateX(unsigned j) { b[j] ^= 1; }
 
-  void SimulateY(unsigned j) { SimulateZ(j); SimulateX(j); }
+  void SimulateY(unsigned j) {
+    g += 2; g %= 8;
+    SimulateZ(j); SimulateX(j);
+  }
 
   void SimulateZ(unsigned j) {
+    if (b[j]) {
+      g += 4; g %= 8;
+    }
     const std::set<unsigned> H = A.cols_where_one(j);
     for (unsigned h : H) {
       R1[h] ^= 1;
@@ -201,6 +217,9 @@ struct Simplex::impl {
       R1[h] ^= R0[h] ^ z;
       R0[h] ^= 1;
     }
+    if (z) {
+      g += 2; g %= 8;
+    }
   }
 
   void SimulateSdg(unsigned j) {
@@ -211,7 +230,11 @@ struct Simplex::impl {
       R0[h] ^= 1;
       R1[h] ^= R0[h] ^ z;
     }
+    if (z) {
+      g += 6; g %= 8;
+    }
   }
+
   void SimulateCX(unsigned j, unsigned k) {
     A.add_row(k, j);
     b[k] ^= b[j];
@@ -236,6 +259,9 @@ struct Simplex::impl {
     }
     for (unsigned h : H_k) {
       R1[h] ^= z_j;
+    }
+    if (z_j && z_k) {
+      g += 4; g %= 8;
     }
   }
 
@@ -319,6 +345,8 @@ struct Simplex::impl {
     }
   }
 
+  int phase() const { return g; }
+
   bool is_deterministic() const { return deterministic; }
 };
 
@@ -354,6 +382,7 @@ int Simplex::MeasY(unsigned j, std::optional<int> coin) {
 int Simplex::MeasZ(unsigned j, std::optional<int> coin) {
   return pImpl->SimulateMeasZ(j, coin);
 }
+int Simplex::phase() const { return pImpl->phase(); }
 bool Simplex::is_deterministic() const { return pImpl->is_deterministic(); }
 
 std::ostream& operator<<(std::ostream& os, const Simplex& S) {
@@ -374,6 +403,7 @@ std::ostream& operator<<(std::ostream& os, const Simplex& S) {
     }
     os << "]" << std::endl;
   }
+  os << "g: " << S.pImpl->g << std::endl;
   os << "p: " << S.pImpl->p << std::endl;
   return os;
 }

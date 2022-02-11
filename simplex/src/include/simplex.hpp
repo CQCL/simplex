@@ -130,6 +130,13 @@ public:
   int MeasZ(unsigned j, std::optional<int> coin = std::nullopt);
 
   /**
+   * Global phase, in units of pi/4
+   *
+   * @return an integer in the range [0,8) representing the global phase
+   */
+  int phase() const;
+
+  /**
    * Determine whether all measurements in the circuit are deterministic
    *
    * @retval true all measurements are deterministic
