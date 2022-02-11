@@ -6,7 +6,7 @@ long_description = (curdir / "pysimplex.md").read_text()
 
 setup(
     name="pysimplex",
-    version="1.1.0",
+    version="1.2.0",
     description="A fast Clifford circuit simulator",
     long_description=long_description,
     long_description_content_type="text/markdown",
