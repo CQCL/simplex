@@ -17,6 +17,19 @@ public:
    */
   Simplex(unsigned n, int seed = 0);
 
+  /**
+   * Construct a simulator initialized in the all-zero state and apply the
+   * commands specified in a Stim-format file.
+   *
+   * https://github.com/quantumlib/Stim/blob/main/doc/file_format_stim_circuit.md
+   *
+   * Not all Stim instruction types are supported.
+   *
+   * @param p path to Stim file
+   * @param seed seed for PRNG
+   */
+  Simplex(const char *p, int seed = 0);
+
   ~Simplex();
   Simplex(const Simplex& other);
   Simplex(Simplex&& other);

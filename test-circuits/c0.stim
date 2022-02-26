@@ -1,0 +1,11 @@
+H 0
+CX 0 1
+S 1
+CZ 1 2
+S_DAG 0
+X 0
+Y 1
+Z 2
+MX 0
+MY 1
+MZ 2

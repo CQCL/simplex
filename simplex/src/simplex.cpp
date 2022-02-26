@@ -2,6 +2,7 @@
 #include "A_matrix.hpp"
 #include "Q_matrix.hpp"
 #include "bimap.hpp"
+#include "parse-stim.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -26,6 +27,30 @@ struct Simplex::impl {
   impl(unsigned n, int seed = 0)
     : n(n), r(0), A(n), b(n, 0), Q(n), R0(n+1, 0), R1(n+1, 0), p(), g(0),
     deterministic(true), rbg(seed) {}
+
+  impl(struct instrs is, int seed = 0) : impl(is.n, seed) {
+    for (const auto &op : is.ops) {
+      switch (op.type) {
+        case optype::X: SimulateX(op.qubits[0]); break;
+        case optype::Y: SimulateY(op.qubits[0]); break;
+        case optype::Z: SimulateZ(op.qubits[0]); break;
+        case optype::H: SimulateH(op.qubits[0]); break;
+        case optype::S: SimulateS(op.qubits[0]); break;
+        case optype::Sdg: SimulateSdg(op.qubits[0]); break;
+        case optype::CX: SimulateCX(op.qubits[0], op.qubits[1]); break;
+        case optype::CZ: SimulateCZ(op.qubits[0], op.qubits[1]); break;
+        case optype::MeasX: SimulateMeasX(op.qubits[0]); break;
+        case optype::MeasY: SimulateMeasY(op.qubits[0]); break;
+        case optype::MeasZ: SimulateMeasZ(op.qubits[0]); break;
+        default:
+          std::cerr << "Unrecognized operation" << std::endl;
+          throw;
+      }
+    }
+  }
+
+  impl(const char *p, int seed = 0)
+    : impl(parse_file(p), seed) {}
 
   /* Data */
 
@@ -274,7 +299,7 @@ struct Simplex::impl {
     }
   }
 
-  int SimulateMeasX(unsigned j, std::optional<int> coin) {
+  int SimulateMeasX(unsigned j, std::optional<int> coin = std::nullopt) {
     int beta;
     std::optional<unsigned> c = principate(j);
     if (c && Q.rowcol_is_zero(*c)) {
@@ -297,7 +322,7 @@ struct Simplex::impl {
     return beta;
   }
 
-  int SimulateMeasY(unsigned j, std::optional<int> coin) {
+  int SimulateMeasY(unsigned j, std::optional<int> coin = std::nullopt) {
     int beta;
     std::optional<unsigned> c = principate(j);
     if (c && Q.rowcol_is_zero(*c)) {
@@ -323,7 +348,7 @@ struct Simplex::impl {
     return beta;
   }
 
-  int SimulateMeasZ(unsigned j, std::optional<int> coin) {
+  int SimulateMeasZ(unsigned j, std::optional<int> coin = std::nullopt) {
     if (A.row_weight(j) == 0) {
       return b[j];
     } else {
@@ -354,6 +379,9 @@ struct Simplex::impl {
 
 Simplex::Simplex(unsigned n, int seed)
   : pImpl(std::make_unique<impl>(n, seed)) {}
+
+Simplex::Simplex(const char *p, int seed)
+  : pImpl(std::make_unique<impl>(p, seed)) {}
 
 Simplex::~Simplex() = default;
 Simplex::Simplex(const Simplex& other)
