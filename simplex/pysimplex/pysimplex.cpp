@@ -15,6 +15,11 @@ PYBIND11_MODULE(_simplex, m) {
     .def(py::init<unsigned>(),
         "Initialize a simulator with `n` qubits.",
         py::arg("n"))
+    .def(py::init<char *, int>(),
+        "Initialize a simulator from a Stim-format file."
+        "\n\n",
+        "Accepts a file path (as a string), and optionally an RNG seed.",
+        py::arg("p"), py::arg("seed") = 0)
     .def("__repr__",
         [](const Simplex& S) {
             std::stringstream ss;
