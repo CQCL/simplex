@@ -145,6 +145,18 @@ print(S.MeasZ(1))
 
 To see the internal state, use `print(S)`.
 
+### Initialization from Stim files
+
+It is possible to initialize a `Simplex` from a file in [Stim format](https://github.com/quantumlib/Stim/blob/main/doc/file_format_stim_circuit.md) by
+passing a file path and (optionally) an integer seed. For example:
+
+```python
+S = Simplex("./test-circuits/random_circuit_64.stim", seed=1)
+```
+
+Most but not all Stim instructions are supported. There is little leniency in
+the parser.
+
 ### Installation from pypi
 
 To install the current stable version from pypi, simply:
