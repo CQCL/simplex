@@ -120,7 +120,7 @@ struct Q_matrix::impl {
       }
     }
     for (unsigned j : rows[k]) {
-      if (!rows[h].contains(j)) {
+      if (j != h && !rows[h].contains(j)) {
         newrow.insert(j);
       }
     }
