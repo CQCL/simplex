@@ -64,7 +64,7 @@ PYBIND11_MODULE(_simplex, m) {
         },
         "Measure qubit `j` in the X basis."
         "\n\n"
-        "If the outcome is non-deterministic, then the outcome is the value of"
+        "If the outcome is non-deterministic, then the outcome is the value of "
         "`coin` if specified (must be 0 or 1), otherwise random.",
         py::arg("j"), py::arg("coin") = std::nullopt)
     .def("MeasY",
@@ -73,7 +73,7 @@ PYBIND11_MODULE(_simplex, m) {
         },
         "Measure qubit `j` in the Y basis."
         "\n\n"
-        "If the outcome is non-deterministic, then the outcome is the value of"
+        "If the outcome is non-deterministic, then the outcome is the value of "
         "`coin` if specified (must be 0 or 1), otherwise random.",
         py::arg("j"), py::arg("coin") = std::nullopt)
     .def("MeasZ",
@@ -82,9 +82,24 @@ PYBIND11_MODULE(_simplex, m) {
         },
         "Measure qubit `j` in the Z basis."
         "\n\n"
-        "If the outcome is non-deterministic, then the outcome is the value of"
+        "If the outcome is non-deterministic, then the outcome is the value of "
         "`coin` if specified (must be 0 or 1), otherwise random.",
         py::arg("j"), py::arg("coin") = std::nullopt)
+    .def("ResetX",
+        [](Simplex *S, unsigned j) { S->ResetX(j); },
+        "Reset qubit `j` in the X basis by measurement and conditional "
+        "correction.",
+        py::arg("j"))
+    .def("ResetY",
+        [](Simplex *S, unsigned j) { S->ResetY(j); },
+        "Reset qubit `j` in the Y basis by measurement and conditional "
+        "correction.",
+        py::arg("j"))
+    .def("ResetZ",
+        [](Simplex *S, unsigned j) { S->ResetZ(j); },
+        "Reset qubit `j` in the Z basis by measurement and conditional "
+        "correction.",
+        py::arg("j"))
     .def_property_readonly("phase",
         &Simplex::phase,
         "Global phase, in units of pi/4 (an integer in the range [0,8))")

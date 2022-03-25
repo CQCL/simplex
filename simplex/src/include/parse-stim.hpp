@@ -2,7 +2,22 @@
 
 #include <vector>
 
-enum optype { X, Y, Z, H, S, Sdg, CX, CZ, MeasX, MeasY, MeasZ };
+enum optype {
+  X,
+  Y,
+  Z,
+  H,
+  S,
+  Sdg,
+  CX,
+  CZ,
+  MeasX,
+  MeasY,
+  MeasZ,
+  ResetX,
+  ResetY,
+  ResetZ
+};
 
 struct op {
   optype type;

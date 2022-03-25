@@ -42,6 +42,9 @@ struct Simplex::impl {
         case optype::MeasX: SimulateMeasX(op.qubits[0]); break;
         case optype::MeasY: SimulateMeasY(op.qubits[0]); break;
         case optype::MeasZ: SimulateMeasZ(op.qubits[0]); break;
+        case optype::ResetX: SimulateResetX(op.qubits[0]); break;
+        case optype::ResetY: SimulateResetY(op.qubits[0]); break;
+        case optype::ResetZ: SimulateResetZ(op.qubits[0]); break;
         default:
           std::cerr << "Unrecognized operation" << std::endl;
           throw;
@@ -370,6 +373,24 @@ struct Simplex::impl {
     }
   }
 
+  void SimulateResetX(unsigned j) {
+    if (SimulateMeasX(j, 0)) {
+      SimulateZ(j);
+    }
+  }
+
+  void SimulateResetY(unsigned j) {
+    if (SimulateMeasY(j, 0)) {
+      SimulateX(j);
+    }
+  }
+
+  void SimulateResetZ(unsigned j) {
+    if (SimulateMeasZ(j, 0)) {
+      SimulateX(j);
+    }
+  }
+
   int phase() const { return g; }
 
   bool is_deterministic() const { return deterministic; }
@@ -410,6 +431,9 @@ int Simplex::MeasY(unsigned j, std::optional<int> coin) {
 int Simplex::MeasZ(unsigned j, std::optional<int> coin) {
   return pImpl->SimulateMeasZ(j, coin);
 }
+void Simplex::ResetX(unsigned j) { pImpl->SimulateResetX(j); }
+void Simplex::ResetY(unsigned j) { pImpl->SimulateResetY(j); }
+void Simplex::ResetZ(unsigned j) { pImpl->SimulateResetZ(j); }
 int Simplex::phase() const { return pImpl->phase(); }
 bool Simplex::is_deterministic() const { return pImpl->is_deterministic(); }
 

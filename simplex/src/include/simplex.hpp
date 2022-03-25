@@ -143,6 +143,27 @@ public:
   int MeasZ(unsigned j, std::optional<int> coin = std::nullopt);
 
   /**
+   * Reset a qubit in the X basis by measurement and conditional correction
+   *
+   * @param j qubit index
+   */
+  void ResetX(unsigned j);
+
+  /**
+   * Reset a qubit in the Y basis by measurement and conditional correction
+   *
+   * @param j qubit index
+   */
+  void ResetY(unsigned j);
+
+  /**
+   * Reset a qubit in the Z basis by measurement and conditional correction
+   *
+   * @param j qubit index
+   */
+  void ResetZ(unsigned j);
+
+  /**
    * Global phase, in units of pi/4
    *
    * @return an integer in the range [0,8) representing the global phase

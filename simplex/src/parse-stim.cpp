@@ -157,6 +157,10 @@ struct instrs parse_file(const char *p) {
       {"MX", {1, {{optype::MeasX, {0}}}}},
       {"MY", {1, {{optype::MeasY, {0}}}}},
       {"MZ", {1, {{optype::MeasZ, {0}}}}},
+      {"R", {1, {{optype::ResetZ, {0}}}}},
+      {"RX", {1, {{optype::ResetX, {0}}}}},
+      {"RY", {1, {{optype::ResetY, {0}}}}},
+      {"RZ", {1, {{optype::ResetZ, {0}}}}},
       {"tick", {0, {}}}
   };
 
