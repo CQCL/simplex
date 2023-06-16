@@ -166,6 +166,6 @@ pip install pysimplex
 ```
 
 The package is available for Linux, MacOS and Windows, and for Python versions
-3.8, 3.9 and 3.10.
+3.9, 3.10 and 3.11.
 
 [1]: https://arxiv.org/abs/2109.08629

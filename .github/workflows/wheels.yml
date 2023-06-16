@@ -6,9 +6,9 @@ on:
 jobs:
   build_linux_wheels:
     name: build linux wheels
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
-      PY_VERS: cp38-cp38 cp39-cp39 cp310-cp310
+      PY_VERS: cp39-cp39 cp310-cp310 cp311-cp311
     steps:
     - uses: actions/checkout@v2
     - name: set up container
@@ -27,15 +27,9 @@ jobs:
         path: wheelhouse/
   build_macos_wheels:
     name: build macos wheels
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v2
-    - name: set up python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    - name: build wheel (3.8)
-      run: .github/workflows/macosbuildwheel
     - name: set up python 3.9
       uses: actions/setup-python@v2
       with:
@@ -47,6 +41,12 @@ jobs:
       with:
         python-version: '3.10'
     - name: build wheel (3.10)
+      run: .github/workflows/macosbuildwheel
+    - name: set up python 3.11
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: build wheel (3.11)
       run: .github/workflows/macosbuildwheel
     - uses: actions/upload-artifact@v2
       with:
@@ -60,11 +60,6 @@ jobs:
         shell: "/usr/bin/arch -arch arm64e /bin/bash {0}"
     steps:
     - uses: actions/checkout@v2
-    - name: build wheel (3.8)
-      run: |
-        eval "$(pyenv init -)"
-        pyenv shell tket-3.8
-        .github/workflows/macosbuildwheel
     - name: build wheel (3.9)
       run: |
         eval "$(pyenv init -)"
@@ -75,24 +70,20 @@ jobs:
         eval "$(pyenv init -)"
         pyenv shell tket-3.10
         .github/workflows/macosbuildwheel
+    - name: build wheel (3.11)
+      run: |
+        eval "$(pyenv init -)"
+        pyenv shell tket-3.11
+        .github/workflows/macosbuildwheel
     - uses: actions/upload-artifact@v2
       with:
         name: macos_m1_wheels
         path: wheelhouse/
   build_windows_wheels:
     name: build windows wheels
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v2
-    - name: set up python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    - name: build wheel (3.8)
-      run: |
-        cd simplex
-        python -m pip install -U pip wheel scikit-build
-        python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
     - name: set up python 3.9
       uses: actions/setup-python@v2
       with:
@@ -107,6 +98,15 @@ jobs:
       with:
         python-version: '3.10'
     - name: build wheel (3.10)
+      run: |
+        cd simplex
+        python -m pip install -U pip wheel scikit-build
+        python setup.py bdist_wheel -d "${{ github.workspace }}/wheelhouse"
+    - name: set up python 3.11
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: build wheel (3.11)
       run: |
         cd simplex
         python -m pip install -U pip wheel scikit-build
