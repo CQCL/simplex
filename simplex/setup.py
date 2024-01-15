@@ -6,7 +6,7 @@ long_description = (curdir / "pysimplex.md").read_text()
 
 setup(
     name="pysimplex",
-    version="1.4.0",
+    version="1.5.0",
     description="A fast Clifford circuit simulator",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -14,12 +14,12 @@ setup(
     author_email="alec.edgington@cambridgequantum.com",
     license="Apache 2",
     url="https://github.com/CQCL/simplex",
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     classifiers=[
         "Environment :: Console",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
